@@ -19,21 +19,12 @@ case class Ooi(_id: Option[String],
                     unitIds: List[String],
                     sourceIds: List[String],
                     meta: Map[String, _])
-  extends LocalizedNamedModel(_id, _score, name, otherNames, description, meta)
+  extends BaseModel(_id, _score)
   with JsonSerializable {
 
-  implicit val formats = DefaultFormats
-
-  lazy val sources = Future.sequence(for(sourceId <- sourceIds) yield { SourceRepository.byId(sourceId) })
-  val units = Future.sequence(for(unitId <- unitIds) yield { UnitRepository.byId(unitId) })
-
-  override def getIndexQuery() = {
-    defaultIndexQuery ++ Map("unitIds" -> unitIds) ++ Map("sourceIds" -> sourceIds)
-  }
-  override def getSearchQuery() = defaultSearchQuery
-  override def getMatchQuery() = defaultMatchQuery
 
   def toJson(level: Int = -1) : Future[JObject] = {
+    implicit val formats = DefaultFormats
     if(level == 0) {
       Future(("_id" -> _id) ~
         ("_score" -> _score) ~
@@ -44,6 +35,9 @@ case class Ooi(_id: Option[String],
         ("meta" -> Extraction.decompose(meta)) ~
         ("sources" -> sourceIds))
     } else {
+      val sources = Future.sequence(for(sourceId <- sourceIds) yield { SourceRepository.byId(sourceId) })
+      val units = Future.sequence(for(unitId <- unitIds) yield { UnitRepository.byId(unitId) })
+
       for(unitsJson <- toJsonSeq(units, level - 1);
           sourcesList <- toJsonSeq(sources, level - 1)) yield {
         ("_id" -> _id) ~

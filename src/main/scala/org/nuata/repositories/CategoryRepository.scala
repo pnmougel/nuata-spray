@@ -4,7 +4,6 @@ import org.elasticsearch.action.search.SearchResponse
 import org.json4s._
 import com.sksamuel.elastic4s.ElasticDsl
 import org.nuata.models.Category
-import org.nuata.repositories.commons.LocalizedNamedItemRepository
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.nuata.shared.ElasticSearch
@@ -13,7 +12,7 @@ import org.nuata.shared.ElasticSearch
  * Created by nico on 02/11/15.
  */
 
-object CategoryRepository extends LocalizedNamedItemRepository[Category]("category") {
+object CategoryRepository extends BaseRepository[Category]("category") {
   implicit val formats = DefaultFormats
 
   protected def jsToInstance(jValue: JValue) = jValue.extract[Category]

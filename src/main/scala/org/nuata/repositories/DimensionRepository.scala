@@ -3,7 +3,6 @@ package org.nuata.repositories
 import org.elasticsearch.action.search.SearchResponse
 import org.json4s._
 import org.nuata.models.Dimension
-import org.nuata.repositories.commons.LocalizedNamedItemRepository
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.nuata.shared.ElasticSearch
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -12,7 +11,7 @@ import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 /**
  * Created by nico on 02/11/15.
  */
-object DimensionRepository extends LocalizedNamedItemRepository[Dimension]("dimension") {
+object DimensionRepository extends BaseRepository[Dimension]("dimension") {
   implicit val formats = DefaultFormats
   protected def jsToInstance(jValue: JValue) = jValue.extract[Dimension]
 

@@ -19,13 +19,8 @@ case class Fact(_id: Option[String], _score: Option[Double],
   extends BaseModel(_id, _score)
   with JsonSerializable {
 
-  implicit val formats = DefaultFormats
-
-  val oois = Future.sequence(for(ooiId <- ooiIds) yield { OoiRepository.byId(ooiId) })
-  val dimensions = Future.sequence(for(dimensionId <- dimensionIds) yield { DimensionRepository.byId(dimensionId) })
-  val sources = Future.sequence(for(sourceId <- sourceIds) yield { SourceRepository.byId(sourceId) })
-
   def toJson(level: Int = -1): Future[JObject] = {
+    implicit val formats = DefaultFormats
     if(level == 0) {
       Future(("value" -> value) ~
         ("valueInt" -> valueInt) ~
@@ -34,6 +29,10 @@ case class Fact(_id: Option[String], _score: Option[Double],
         ("meta" -> Extraction.decompose(meta)) ~
         ("sources" -> sourceIds))
     } else {
+      val oois = Future.sequence(for(ooiId <- ooiIds) yield { OoiRepository.byId(ooiId) })
+      val dimensions = Future.sequence(for(dimensionId <- dimensionIds) yield { DimensionRepository.byId(dimensionId) })
+      val sources = Future.sequence(for(sourceId <- sourceIds) yield { SourceRepository.byId(sourceId) })
+
       for(ooisJson <- toJsonSeq(oois, level - 1);
           dimensionsJson <- toJsonSeq(dimensions, level - 1);
           sourceJson <- toJsonSeq(sources, level - 1)) yield {

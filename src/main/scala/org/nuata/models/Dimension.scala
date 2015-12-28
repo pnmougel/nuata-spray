@@ -21,22 +21,12 @@ case class Dimension(_id: Option[String],
                           parentIds: List[String],
                           sourceIds: List[String],
                           meta: Map[String, _])
-  extends LocalizedNamedModel(_id, _score, name, otherNames, description, meta)
+  extends BaseModel(_id, _score)
   with JsonSerializable {
 
-  implicit val formats = DefaultFormats
-
-  lazy val categories = Future.sequence(for(categoryId <- categoryIds) yield { CategoryRepository.byId(categoryId) })
-  lazy val parents = Future.sequence(for(parentId <- parentIds) yield { DimensionRepository.byId(parentId) })
-  lazy val sources = Future.sequence(for(sourceId <- sourceIds) yield { SourceRepository.byId(sourceId) })
-
-  override def getIndexQuery() = {
-    defaultIndexQuery ++ Map("categoryIds" -> categoryIds, "parentIds" -> parentIds, "sourceIds" -> sourceIds)
-  }
-  override def getSearchQuery = defaultSearchQuery // must { termQuery("categoryIds", "AVEAaeytsFQ7gjHpyznm") }
-  override def getMatchQuery() = defaultMatchQuery
-
   def toJson(level: Int = -1) : Future[JObject] = {
+    implicit val formats = DefaultFormats
+
     if(level == 0) {
       Future(("_id" -> _id) ~
         ("_score" -> _score) ~
@@ -48,6 +38,10 @@ case class Dimension(_id: Option[String],
         ("meta" -> Extraction.decompose(meta)) ~
         ("sources" -> sourceIds))
     } else {
+      val categories = Future.sequence(for(categoryId <- categoryIds) yield { CategoryRepository.byId(categoryId) })
+      val parents = Future.sequence(for(parentId <- parentIds) yield { DimensionRepository.byId(parentId) })
+      val sources = Future.sequence(for(sourceId <- sourceIds) yield { SourceRepository.byId(sourceId) })
+
       for(categoriesList <- toJsonSeq(categories, level - 1);
           parentsList <- toJsonSeq(parents, level - 1);
           sourcesList <- toJsonSeq(sources, level - 1)) yield {

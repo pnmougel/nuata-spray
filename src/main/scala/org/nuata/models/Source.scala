@@ -20,9 +20,8 @@ case class Source(_id: Option[String],
   extends BaseModel(_id, _score)
   with JsonSerializable {
 
-  implicit val formats = DefaultFormats
-
   def toJson(level: Int = -1): Future[JObject] = {
+    implicit val formats = DefaultFormats
     Future(
       ("_id" -> _id) ~
         ("_score" -> _score) ~

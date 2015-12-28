@@ -2,9 +2,8 @@ package org.nuata.repositories
 
 import java.util.Date
 
-import org.json4s._
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
+import org.json4s._
 import org.nuata.shared.ElasticSearch
 
 /**

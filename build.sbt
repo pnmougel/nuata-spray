@@ -17,12 +17,18 @@ libraryDependencies ++= {
     "com.typesafe.akka"   %%  "akka-testkit"  % akkaV   % "test",
     "org.specs2"          %%  "specs2-core"   % "2.3.11" % "test",
 
-    // Joda time
+    "org.slf4j"    % "slf4j-api"    % "1.7.1",
+    "org.slf4j"    % "log4j-over-slf4j"  % "1.7.1",
+
+  // Joda time
     "joda-time" % "joda-time" % "2.8.2",
 
     // Json4s
     "org.json4s" %% "json4s-jackson" % "3.3.0",
     "org.json4s" % "json4s-ext_2.10" % "3.3.0",
+
+    // Language detection
+    "com.optimaize.languagedetector" % "language-detector" % "0.5",
 
     // Elasticsearch
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4",
