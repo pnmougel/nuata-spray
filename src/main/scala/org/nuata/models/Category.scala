@@ -23,12 +23,8 @@ case class Category(_id: Option[String],
   extends BaseModel(_id, _score)
   with JsonSerializable {
 
-
-
   def toJson(level: Int = -1) : Future[JObject] = {
     implicit val formats = DefaultFormats
-
-
 
     if(level == 0) {
       Future(("_id" -> _id) ~ ("_score" -> _score) ~

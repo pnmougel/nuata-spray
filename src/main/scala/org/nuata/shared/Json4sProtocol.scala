@@ -2,7 +2,6 @@ package org.nuata.shared
 
 import org.json4s.DefaultFormats
 import org.json4s.ext.EnumNameSerializer
-import org.nuata.repositories.NameOperations
 import spray.httpx.Json4sJacksonSupport
 
 /**

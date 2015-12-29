@@ -4,10 +4,11 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.ElasticDsl
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.action.get.GetResponse
+import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.action.search.SearchResponse
 import org.json4s._
 import org.nuata.models.JsonSerializable
-import org.nuata.shared.{Languages, ElasticSearch}
+import org.nuata.shared._
 
 import scala.concurrent.Future
 import org.json4s.JsonDSL._

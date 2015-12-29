@@ -2,6 +2,7 @@ package org.nuata.services
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
+import org.nuata.authentication.Authenticator
 import org.nuata.models._
 import org.nuata.shared.{ElasticSearch, Json4sProtocol}
 import spray.routing.{Directive1, HttpService}
@@ -11,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * Created by nico on 28/12/15.
  */
-trait IndexService extends HttpService with Json4sProtocol {
+trait IndexService extends HttpService with Json4sProtocol with Authenticator {
 
 //  val nameToDirective = Map[String, Directive1[_]](
 //    "unit" -> entity(as[Unit]),
