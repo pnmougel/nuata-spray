@@ -30,9 +30,13 @@ libraryDependencies ++= {
     // Language detection
     "com.optimaize.languagedetector" % "language-detector" % "0.5",
 
+    // Bcrypt
+    "com.github.t3hnar" % "scala-bcrypt_2.10" % "2.5",
+
     // Elasticsearch
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4",
     "com.sksamuel.elastic4s" % "elastic4s-jackson_2.11" % "1.7.4"
+
   )
 }
 
