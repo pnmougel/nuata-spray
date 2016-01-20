@@ -10,8 +10,6 @@ import org.nuata.shared.ElasticSearch
  * Created by nico on 02/11/15.
  */
 object QueryRepository  {
-  implicit val formats = DefaultFormats
-
   def logQuery(query: String, dimensionIds: List[String], categoryIds: List[String], unitIds: List[String], ooiIds: List[String], ip: String) = {
     val log = Map("query" -> query,
       "dimensionIds" -> dimensionIds,

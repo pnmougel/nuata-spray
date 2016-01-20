@@ -11,9 +11,7 @@ import org.nuata.shared.ElasticSearch
  * Created by nico on 02/11/15.
  */
 object OoiRepository extends BaseRepository[Ooi]("ooi") {
-  implicit val formats = DefaultFormats
   protected def jsToInstance(jValue: JValue) = jValue.extract[Ooi]
 
   def resultToEntity(res: SearchResponse) = res.as[Ooi]
-
 }

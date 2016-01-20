@@ -1,8 +1,11 @@
 package org.nuata.services
 
 import org.json4s.Extraction
+import org.nuata.authentication.oauth.{GoogleUserInfo, TokenResponse}
+import org.nuata.authentication.oauth.facebook.{FacebookUserInfo, FacebookToken}
 import org.nuata.authentication.oauth.github.{GithubCode, GithubToken, GithubUserInfo}
 import org.nuata.repositories.UserRepository
+import org.nuata.services.routing.RouteRegistration
 import org.nuata.shared.{Json4sProtocol, Settings}
 import spray.client.pipelining._
 import spray.http.HttpHeaders.{Accept, Authorization}
@@ -16,104 +19,90 @@ import scala.concurrent.Future
 /**
  * Created by nico on 29/12/15.
  */
-trait OauthService extends HttpService with Json4sProtocol {
+trait OauthService extends RouteRegistration with Json4sProtocol {
   val pipeline: HttpRequest => Future[HttpResponse] = (
     addHeader(Accept(MediaTypes.`application/json`))
       ~> encode(Gzip)
       ~> sendReceive
       ~> decode(Deflate))
 
-  val tokenPipeline: HttpRequest => Future[GithubToken] = pipeline ~> unmarshal[GithubToken]
+  val tokenPipeline: HttpRequest => Future[TokenResponse] = pipeline ~> unmarshal[TokenResponse]
+  val facebookTokenPipeline: HttpRequest => Future[FacebookToken] = pipeline ~> unmarshal[FacebookToken]
 
   def userInfoPipeline(accessToken: String): HttpRequest => Future[GithubUserInfo] =
     (addHeader(Authorization(OAuth2BearerToken(accessToken)))
       ~> pipeline
       ~> unmarshal[GithubUserInfo])
 
-  val githubAuthRoutes = (path("auth" / "github") & post & entity(as[GithubCode]) ) { rq =>
-    val clientId = Settings.conf.getString("github.clientId")
-    val clientSecret = Settings.conf.getString("github.clientSecret")
+  def facebookUserInfoPipeline(accessToken: String): HttpRequest => Future[FacebookUserInfo] =
+    (addHeader(Authorization(OAuth2BearerToken(accessToken)))
+      ~> pipeline
+      ~> unmarshal[FacebookUserInfo])
 
-    val future = tokenPipeline(Get(s"https://github.com/login/oauth/access_token?code=${rq.code}&client_id=${clientId}&client_secret=${clientSecret}"))
-      .flatMap( tokenInfo => {
-        userInfoPipeline(tokenInfo.access_token)(Get("https://api.github.com/user"))
-      }).flatMap { userInfo =>
-        println(userInfo)
-        UserRepository.emailExists(userInfo.email)
-      }
+  def googleUserInfoPipeline(accessToken: String): HttpRequest => Future[GoogleUserInfo] =
+    (addHeader(Authorization(OAuth2BearerToken(accessToken)))
+      ~> pipeline
+      ~> unmarshal[GoogleUserInfo])
 
-    onSuccess(future) {
-      case true => reject(MalformedRequestContentRejection(s"login or mail already registered"))
-      case false => complete(Extraction.decompose(Map("token" -> "fsdfdsf")))
-    }
-  }
+  registerRoute {
+    (path("auth" / "github") & post & entity(as[GithubCode]) ) { rq =>
+      val clientId = Settings.conf.getString("github.clientId")
+      val clientSecret = Settings.conf.getString("github.clientSecret")
 
-
-//  val githubAuthRoutes = (path("auth" / "github") & post & entity(as[Foo]) ) { rq =>
-//    val clientId = Settings.conf.getString("github.clientId")
-//    val clientSecret = Settings.conf.getString("github.clientSecret")
-//
-//      tokenPipeline2(Get(s"https://github.com/login/oauth/access_token?code=${rq.code}&client_id=${clientId}&client_secret=${clientSecret}"))
-//        .flatMap( tokenInfo => {
-//          pipeline(Get("https://api.github.com/user").withHeaders(Authorization(OAuth2BearerToken(tokenInfo.access_token))))
-//        }).map { res =>
-//          println(res.entity.asString)
-//          parse(res.entity.asString).extract[GithubUserInfo]
-////          val tokenInfo = parse(res.entity.asString).extract[GithubToken]
-////          println(tokenInfo)
-//        }.flatMap { userInfo =>
-//          UserRepository.emailExists(userInfo.email)
-//        }
-//
-//    complete {
-//      Extraction.decompose(Map(
-//        "token" -> "youhou"
-//      ))
-//    }
-//  }
-
-
-  /*
-  val githubAuthRoutes2 = path("auth" / "github") {
-    get {
-      parameters('code) { (code) =>
-        println(code)
-
-        implicit val formatsCur = DefaultFormats
-        val clientId = Settings.conf.getString("github.clientId")
-        val clientSecret = Settings.conf.getString("github.clientSecret")
-
-        val formData = FormData(Seq(
-          "client_id" -> clientId,
-          "client_secret" -> clientSecret,
-          "code" -> code))
-
-        pipeline(Post("https://github.com/login/oauth/access_token", formData)
-          .withHeaders(Accept(MediaTypes.`application/json`)))
-          .map { res =>
-          parse(res.entity.asString).extract[GithubToken]
-        }.flatMap( tokenInfo => {
-          pipeline(Get("https://api.github.com/user/emails", formData)
-            .withHeaders(Authorization(OAuth2BearerToken(tokenInfo.access_token))))
-        }).map { res =>
-          println(res.entity.asString)
-
-        }.map { userMails =>
-          userMails.find(m => m.primary.getOrElse(false)).getOrElse(userMails.head)
-        }.flatMap { userMail =>
-          UserRepository.emailExists(userMail.email)
+      val future = tokenPipeline(Get(s"https://github.com/login/oauth/access_token?code=${rq.code}&client_id=${clientId}&client_secret=${clientSecret}"))
+        .flatMap( tokenInfo => {
+          userInfoPipeline(tokenInfo.access_token)(Get("https://api.github.com/user"))
+        }).flatMap { userInfo =>
+          UserRepository.createUser(userInfo.email, Some(userInfo.name))
         }
 
-        complete {
-          <html>
-            <script>
-//              window.opener.location.reload();
-              window.close();
-            </script>
-          </html>
-        }
+      onSuccess(future) {
+        case token: String => complete(Extraction.decompose(Map("token" -> token)))
+        case _ => reject(MalformedRequestContentRejection(s"login or mail already registered"))
       }
     }
   }
-  */
+
+  registerRoute {
+    (path("auth" / "facebook") & post & entity(as[GithubCode]) ) { rq =>
+      val clientId = Settings.conf.getString("facebook.clientId")
+      val clientSecret = Settings.conf.getString("facebook.clientSecret")
+      val apiVersion = Settings.conf.getString("facebook.apiVersion")
+      val redirectUri = Settings.conf.getString("facebook.redirectUri")
+
+      val tokenUrl = s"https://graph.facebook.com/${apiVersion}/oauth/access_token?client_id=${clientId}&redirect_uri=${redirectUri}&client_secret=${clientSecret}&code=${rq.code}"
+      val future = tokenPipeline(Get(tokenUrl))
+        .flatMap( tokenInfo => {
+          facebookUserInfoPipeline(tokenInfo.access_token)(Get(s"https://graph.facebook.com/${apiVersion}/me?fields=id,name,email,verified"))
+        }).flatMap { userInfo =>
+          UserRepository.createUser(userInfo.email, Some(userInfo.name))
+        }
+
+      onSuccess(future) {
+        case token: String => complete(Extraction.decompose(Map("token" -> token)))
+        case _ => reject(MalformedRequestContentRejection(s"login or mail already registered"))
+      }
+    }
+  }
+
+  registerRoute {
+    (path("auth" / "google") & post & entity(as[GithubCode]) ) { rq =>
+      val clientId = Settings.conf.getString("google.clientId")
+      val clientSecret = Settings.conf.getString("google.clientSecret")
+      val apiVersion = Settings.conf.getString("google.apiVersion")
+
+       val tokenUrl = s"https://www.googleapis.com/oauth2/${apiVersion}/token?client_id=${clientId}&redirect_uri=${rq.redirectUri}&client_secret=${clientSecret}&code=${rq.code}&grant_type=authorization_code"
+
+      val future = tokenPipeline(Post(tokenUrl))
+        .flatMap( tokenInfo => {
+          googleUserInfoPipeline(tokenInfo.access_token)(Get("https://www.googleapis.com/plus/v1/people/me"))
+        }).flatMap { userInfo =>
+          UserRepository.createUser(userInfo.emails.head.value, userInfo.displayName)
+        }
+      onSuccess(future) {
+        case token: String => complete(Extraction.decompose(Map("token" -> token)))
+        case _ => reject(MalformedRequestContentRejection(s"login or mail already registered"))
+      }
+    }
+  }
 }

@@ -2,6 +2,7 @@ package org.nuata.services
 
 import com.sksamuel.elastic4s.{LowercaseTokenFilter, KeywordTokenizer, CustomAnalyzerDefinition}
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.nuata.services.routing.RouteRegistration
 import org.nuata.shared.{Languages, ElasticSearch}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -12,12 +13,14 @@ import spray.routing.HttpService
 /**
  * Created by nico on 28/12/15.
  */
-trait InitService extends HttpService {
-  val initRoute = path("init") {
-    post {
-      complete {
-        initDb()
-        "ok"
+trait InitService extends RouteRegistration {
+  registerRoute {
+    path("init") {
+      post {
+        complete {
+          initDb()
+          "ok"
+        }
       }
     }
   }
@@ -41,6 +44,7 @@ trait InitService extends HttpService {
 
     val categoryIds = "categoryIds" typed StringType index "not_analyzed" fields("raw" typed StringType index "not_analyzed")
     val parentIds = "parentIds" typed StringType index "not_analyzed"
+    val allParentIds = "allParentIds" typed StringType index "not_analyzed"
     val unitIds = "unitIds" typed StringType index "not_analyzed"
     val sourceIds = "sourceIds" typed StringType index "not_analyzed"
 
@@ -68,7 +72,7 @@ trait InitService extends HttpService {
     ElasticSearch.client.execute {
       create.index("nuata").mappings(
         "category" as (sourceIds:: baseQuery),
-        "dimension" as (parentIds :: categoryIds :: sourceIds:: baseQuery),
+        "dimension" as (allParentIds :: parentIds :: categoryIds :: sourceIds :: baseQuery),
         "unit" as (("kind" typed StringType index "not_analyzed") :: sourceIds :: baseQuery),
         "ooi" as (unitIds :: sourceIds:: baseQuery),
         "source" as sourceMapping,
@@ -88,6 +92,13 @@ trait InitService extends HttpService {
           "unitIds" typed StringType index "not_analyzed",
           "ip" typed StringType,
           "at" typed DateType
+          ),
+        "user" as (
+          "login" typed StringType index "not_analyzed",
+          "email" typed StringType index "not_analyzed",
+          "login" typed StringType index "not_analyzed",
+          "hashedPassword" typed StringType index "not_analyzed",
+          "token" typed StringType index "not_analyzed"
           )
       ).analysis(CustomAnalyzerDefinition(
         "lowerKeywordAnalyzer",

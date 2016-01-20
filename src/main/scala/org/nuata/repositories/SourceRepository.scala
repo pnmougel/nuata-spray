@@ -11,8 +11,6 @@ import org.nuata.models.Source
  */
 
 object SourceRepository extends BaseRepository[Source]("source") {
-  implicit val formats = DefaultFormats
-
   def resultToEntity(res: SearchResponse) = res.as[Source]
 
   protected def jsToInstance(jValue: JValue) = jValue.extract[Source]

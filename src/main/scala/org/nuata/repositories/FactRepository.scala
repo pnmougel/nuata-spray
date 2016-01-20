@@ -14,8 +14,6 @@ import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
  */
 
 object FactRepository extends BaseRepository[Fact]("fact") {
-  implicit val formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all
-
   def resultToEntity(res: SearchResponse) = res.as[Fact]
 
   protected def jsToInstance(jValue: JValue) = jValue.extract[Fact]

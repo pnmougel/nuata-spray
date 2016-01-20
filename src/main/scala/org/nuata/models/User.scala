@@ -7,13 +7,9 @@ import org.nuata.authentication.Role.Role
 /**
  * Created by nico on 29/12/15.
  */
-case class User(var _id: Option[String],
+case class User(_id: Option[String],
                 _score: Option[Double],
-                login: String,
-                hashedPassword: Option[String] = None,
-                mail: String,
-                roles: List[Role]) {
-  def withPassword(password: String) = copy (hashedPassword = Some(password.bcrypt(generateSalt)))
-
-  def passwordMatches(password: String): Boolean = hashedPassword.exists(hp => BCrypt.checkpw(password, hp))
+                email: String,
+                name: Option[String],
+                roles: Role) {
 }

@@ -1,7 +1,5 @@
 package org.nuata.authentication
 
-import org.nuata.authentication.Permission._
-
 /**
  * Created by nico on 29/12/15.
  */
