@@ -19,9 +19,10 @@ case class Ooi(_id: Option[String],
                     unitIds: List[String],
                     sourceIds: List[String],
                     meta: Map[String, _])
-  extends BaseModel(_id, _score)
+  extends EsModel[Ooi](_id, _score)
   with JsonSerializable {
 
+  def withId(_id: String) = this.copy(_id = Some(_id))
 
   def toJson(level: Int = -1) : Future[JObject] = {
     implicit val formats = DefaultFormats

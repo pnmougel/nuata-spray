@@ -11,5 +11,6 @@ case class User(_id: Option[String],
                 _score: Option[Double],
                 email: String,
                 name: Option[String],
-                roles: Role) {
+                roles: Role) extends EsModel[User](_id, _score) {
+  def withId(_id: String) = this.copy(_id = Some(_id))
 }

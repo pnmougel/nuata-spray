@@ -16,8 +16,10 @@ case class Fact(_id: Option[String], _score: Option[Double],
                      at: Option[java.util.Date],
                      value: Option[Double], valueInt: Option[Long],
                      meta: Map[String, _])
-  extends BaseModel(_id, _score)
+  extends EsModel[Fact](_id, _score)
   with JsonSerializable {
+
+  def withId(_id: String) = this.copy(_id = Some(_id))
 
   def toJson(level: Int = -1): Future[JObject] = {
     implicit val formats = DefaultFormats

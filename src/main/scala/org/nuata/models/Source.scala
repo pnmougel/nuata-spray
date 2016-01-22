@@ -17,8 +17,10 @@ case class Source(_id: Option[String],
                        kind: String,
                        authors: List[String],
                        meta: Option[Map[String, _]])
-  extends BaseModel(_id, _score)
+  extends EsModel[Source](_id, _score)
   with JsonSerializable {
+
+  def withId(_id: String) = this.copy(_id = Some(_id))
 
   def toJson(level: Int = -1): Future[JObject] = {
     implicit val formats = DefaultFormats

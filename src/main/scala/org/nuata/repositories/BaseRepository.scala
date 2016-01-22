@@ -4,7 +4,9 @@ import java.util
 import java.util.concurrent.TimeUnit
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.source.Indexable
 import com.sksamuel.elastic4s.{HitAs, SearchType, ElasticDsl}
+import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.index.IndexResponse
@@ -12,7 +14,7 @@ import org.elasticsearch.action.search.SearchResponse
 import org.json4s._
 import org.json4s.ext.{EnumSerializer, EnumNameSerializer}
 import org.nuata.authentication.Role
-import org.nuata.models.{Dimension, JsonSerializable}
+import org.nuata.models.{EsModel, Dimension, JsonSerializable}
 import org.nuata.models.queries.SearchQuery
 import org.nuata.shared._
 
@@ -41,17 +43,35 @@ import scala.concurrent.duration._
  * Created by nico on 02/11/15.
  */
 
-abstract class BaseRepository[T](val `type`: String)(implicit mf: scala.reflect.Manifest[T], hitAs: HitAs[T]) {
-
-
+abstract class BaseRepository[T <: EsModel[T]](val `type`: String)(implicit mf: scala.reflect.Manifest[T], hitAs: HitAs[T], indexable: Indexable[T]) {
   val path = "nuata" / `type`
   val client = ElasticSearch.client
 
   implicit val formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(Role) + new EnumSerializer(Role)
 
-  def count = {
-    client.execute { ElasticDsl.count from "nuata" types `type` }
+  def count = client.execute { ElasticDsl.count from "nuata" types `type` }
+
+
+
+  def index(item: T): Future[IndexResponse] = {
+    client.execute { ElasticDsl.index into path source item }
   }
+  def index(items: Seq[T]): Future[BulkResponse] = {
+    val indexQueries = items.map( item => ElasticDsl.index into path source item)
+    client.execute { bulk (indexQueries) }
+  }
+
+  def indexAndMap(item: T): Future[T] = {
+    index(item) map { res => item.withId(res.getId) }
+  }
+  def indexAndMap(items: Seq[T]): Future[Seq[T]] = {
+    index(items) map { res =>
+      items.zip(res.getItems).map( entry  => {
+        entry._1.withId(entry._2.getId)
+      })
+    }
+  }
+
 
   def resultToEntity(res: GetResponse): T = {
     val js = org.json4s.jackson.JsonMethods.parse(res.getSourceAsString).asInstanceOf[JObject]

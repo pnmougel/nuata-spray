@@ -20,8 +20,10 @@ case class Category(_id: Option[String],
                          description: Map[String, String],
                          sourceIds: List[String],
                          meta: Map[String, _])
-  extends BaseModel(_id, _score)
+  extends EsModel[Category](_id, _score)
   with JsonSerializable {
+
+  def withId(_id: String) = this.copy(_id = Some(_id))
 
   def toJson(level: Int = -1) : Future[JObject] = {
     implicit val formats = DefaultFormats
