@@ -4,7 +4,7 @@ import java.util
 import java.util.concurrent.TimeUnit
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{SearchType, ElasticDsl}
+import com.sksamuel.elastic4s.{HitAs, SearchType, ElasticDsl}
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.index.IndexResponse
@@ -22,11 +22,28 @@ import org.json4s.JsonDSL._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
+
+import com.sksamuel.elastic4s.{HitAs, ElasticDsl}
+import com.sksamuel.elastic4s.ElasticDsl._
+import org.elasticsearch.action.count.CountResponse
+import org.elasticsearch.action.get.GetResponse
+import org.elasticsearch.action.search.SearchResponse
+import org.json4s.JsonDSL._
+import org.json4s._
+import org.json4s.ext.{EnumNameSerializer, EnumSerializer}
+
+import scala.collection.mutable
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.duration._
+
 /**
  * Created by nico on 02/11/15.
  */
 
-abstract class BaseRepository[T](val `type`: String) {
+abstract class BaseRepository[T](val `type`: String)(implicit mf: scala.reflect.Manifest[T], hitAs: HitAs[T]) {
+
+
   val path = "nuata" / `type`
   val client = ElasticSearch.client
 
@@ -36,19 +53,10 @@ abstract class BaseRepository[T](val `type`: String) {
     client.execute { ElasticDsl.count from "nuata" types `type` }
   }
 
-  /**
-   * Convert a search response to an array of model instance
-   * @param res
-   * @return
-   */
-  def resultToEntity(res: SearchResponse) : Array[T]
-
   def resultToEntity(res: GetResponse): T = {
     val js = org.json4s.jackson.JsonMethods.parse(res.getSourceAsString).asInstanceOf[JObject]
-    jsToInstance(js ~ ("_id" -> res.getId))
+    (js ~ ("_id" -> res.getId)).extract[T]
   }
-
-  protected def jsToInstance(jValue: JValue): T
 
   def byId(id: String): Future[T] = {
     client.execute {get id id from path}.map(resultToEntity)
@@ -114,13 +122,13 @@ abstract class BaseRepository[T](val `type`: String) {
   }
 
   def join(fieldName: String, ids: Seq[String], limit: Int = 1000) = {
-    ElasticSearch.client.execute(search in path query { termsQuery(fieldName, ids :_*) } limit limit)
+    client.execute(search in path query { termsQuery(fieldName, ids :_*) } limit limit)
   }
 
   def searchAndExpand(searchOptions: SearchQuery) = {
     doSearch(searchOptions).flatMap( res => {
       val (count, search) = res
-      Future.sequence(resultToEntity(search).toList.map( item => {
+      Future.sequence(search.as[T].toList.map( item => {
         item.asInstanceOf[JsonSerializable].toJson(searchOptions.expand)
       })).map( jValues => {
         Map("nbItems" -> count.getCount,
@@ -140,7 +148,7 @@ abstract class BaseRepository[T](val `type`: String) {
     val dimensionIdToChildByCategory = mutable.HashMap[String, mutable.HashMap[String, List[(Int, Dimension)]]]()
 
     for(res <- client.iterateSearch(search in path query "*" size 10000)(1.minutes)) {
-      val items = resultToEntity(res).asInstanceOf[Array[Dimension]]
+      val items = res.as[T].asInstanceOf[Array[Dimension]]
       items.map(item => {
         for(parentId <- item.parentIds; categoryId <- item.categoryIds) {
 //          dimensionIdToChildByCategory(parentId)(categoryId) = List((1, item))

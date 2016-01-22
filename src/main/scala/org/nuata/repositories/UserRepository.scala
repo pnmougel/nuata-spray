@@ -25,10 +25,6 @@ import scala.util.Random
  * Created by nico on 29/12/15.
  */
 object UserRepository extends BaseRepository[User]("user") {
-  protected def jsToInstance(jValue: JValue) = jValue.extract[User]
-
-  def resultToEntity(res: SearchResponse) = res.as[User]
-
   private val maxTryTokenGenerate = 10
 
   /**

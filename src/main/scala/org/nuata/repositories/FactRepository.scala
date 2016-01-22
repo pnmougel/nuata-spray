@@ -14,8 +14,4 @@ import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
  */
 
 object FactRepository extends BaseRepository[Fact]("fact") {
-  def resultToEntity(res: SearchResponse) = res.as[Fact]
-
-  protected def jsToInstance(jValue: JValue) = jValue.extract[Fact]
-
 }

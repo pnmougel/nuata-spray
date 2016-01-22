@@ -10,7 +10,4 @@ import org.nuata.models.Unit
  * Created by nico on 02/11/15.
  */
 object UnitRepository extends BaseRepository[Unit]("unit") {
-  protected def jsToInstance(jValue: JValue) = jValue.extract[Unit]
-
-  def resultToEntity(res: SearchResponse) = res.as[Unit]
 }

@@ -15,10 +15,6 @@ import scala.concurrent.Future._
  * Created by nico on 02/11/15.
  */
 object DimensionRepository extends BaseRepository[Dimension]("dimension") {
-  protected def jsToInstance(jValue: JValue) = jValue.extract[Dimension]
-
-  def resultToEntity(res: SearchResponse) = res.as[Dimension]
-
   def removeDependency(dimensionId: String, dependencyId: String, dependencyType: String) = {
     byIdOpt(dimensionId).map(dimensionOpt => {
       for(dimension <- dimensionOpt) yield {
@@ -52,7 +48,8 @@ object DimensionRepository extends BaseRepository[Dimension]("dimension") {
 
   def getChildren2(id: String) : Future[Array[Dimension]] = {
     client.execute(search in path query { termsQuery("allParentIds", id) } limit 100000).map( res => {
-      resultToEntity(res)
+      res.as[Dimension]
+//      resultToEntity(res)
     })
   }
 

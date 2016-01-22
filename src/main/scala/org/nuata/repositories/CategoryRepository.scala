@@ -13,7 +13,4 @@ import org.nuata.shared.ElasticSearch
  */
 
 object CategoryRepository extends BaseRepository[Category]("category") {
-  protected def jsToInstance(jValue: JValue) = jValue.extract[Category]
-
-  def resultToEntity(res: SearchResponse) = res.as[Category]
 }
