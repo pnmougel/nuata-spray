@@ -1,38 +1,17 @@
 package org.nuata.repositories
 
-import java.util
-import java.util.concurrent.TimeUnit
-
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.source.Indexable
-import com.sksamuel.elastic4s.{HitAs, SearchType, ElasticDsl}
-import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.action.get.GetResponse
-import org.elasticsearch.action.index.IndexResponse
-import org.elasticsearch.action.search.SearchResponse
-import org.json4s._
-import org.json4s.ext.{EnumSerializer, EnumNameSerializer}
-import org.nuata.authentication.Role
-import org.nuata.models.{EsModel, Dimension, JsonSerializable}
-import org.nuata.models.queries.SearchQuery
-import org.nuata.shared._
-
-import scala.collection.mutable
-import scala.concurrent.Future
-import org.json4s.JsonDSL._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration._
-
-import com.sksamuel.elastic4s.{HitAs, ElasticDsl}
-import com.sksamuel.elastic4s.ElasticDsl._
-import org.elasticsearch.action.count.CountResponse
-import org.elasticsearch.action.get.GetResponse
-import org.elasticsearch.action.search.SearchResponse
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.ext.{EnumNameSerializer, EnumSerializer}
+import org.nuata.authentication.Role
+import org.nuata.models.queries.SearchQuery
+import org.nuata.models.{Dimension, EsModel, JsonSerializable}
+import org.nuata.shared._
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,11 +31,10 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String)(implicit mf: 
   def count = client.execute { ElasticDsl.count from "nuata" types `type` }
 
 
-
-  def index(item: T): Future[IndexResponse] = {
+  def index(item: T): Future[IndexResult] = {
     client.execute { ElasticDsl.index into path source item }
   }
-  def index(items: Seq[T]): Future[BulkResponse] = {
+  def index(items: Seq[T]): Future[BulkResult] = {
     val indexQueries = items.map( item => ElasticDsl.index into path source item)
     client.execute { bulk (indexQueries) }
   }
@@ -79,7 +57,7 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String)(implicit mf: 
   }
 
   def byId(id: String): Future[T] = {
-    client.execute {get id id from path}.map(resultToEntity)
+    client.execute {get id id from path}.map(foo => resultToEntity(foo.original))
   }
 
   def byIds(ids: List[String]): Future[List[T]] = {
@@ -101,20 +79,25 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String)(implicit mf: 
 
   def byIdOpt(id: String): Future[Option[T]] = {
     client.execute {get id id from path}.map(item => {
-      if(item.isExists) Some(resultToEntity(item)) else None
+      if(item.isExists) Some(resultToEntity(item.original)) else None
     })
   }
 
-  def doSearch(searchOptions: SearchQuery) : Future[(CountResponse, SearchResponse)] = {
+  def doSearch(searchOptions: SearchQuery) : Future[(CountResponse, RichSearchResponse)] = {
     val nameLower = searchOptions.name.toLowerCase
 
     val nameQuery = nestedQuery("otherNames").query( bool {
       should { for(lang <- Languages.available) yield {
         searchOptions.nameOperation match {
-          case NameOperations.StartsWith => filteredQuery filter prefixFilter(s"otherNames.$lang.raw", nameLower)
+//          case NameOperations.StartsWith => filteredQuery filter prefixFilter(s"otherNames.$lang.raw", nameLower)
+//          case NameOperations.Match => matchQuery(s"otherNames.$lang", nameLower)
+//          case NameOperations.Exact => filteredQuery filter termFilter(s"otherNames.$lang.raw", nameLower)
+//          case _ => filteredQuery filter prefixFilter(s"otherNames.$lang.raw", nameLower)
+
+          case NameOperations.StartsWith => filteredQuery filter matchQuery(s"otherNames.$lang.raw", nameLower)
           case NameOperations.Match => matchQuery(s"otherNames.$lang", nameLower)
-          case NameOperations.Exact => filteredQuery filter termFilter(s"otherNames.$lang.raw", nameLower)
-          case _ => filteredQuery filter prefixFilter(s"otherNames.$lang.raw", nameLower)
+          case NameOperations.Exact => filteredQuery filter matchQuery(s"otherNames.$lang.raw", nameLower)
+          case _ => filteredQuery filter matchQuery(s"otherNames.$lang.raw", nameLower)
         }
       }}
     })
