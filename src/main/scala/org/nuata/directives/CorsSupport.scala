@@ -1,36 +1,50 @@
 package org.nuata.directives
 
-
-import spray.http.{HttpMethods, HttpMethod, HttpResponse, AllOrigins}
-import spray.http.HttpHeaders._
+import spray.routing.directives.RouteDirectives._
+import spray.routing.directives.MethodDirectives._
+import spray.routing.directives.HeaderDirectives._
+import spray.routing.directives.BasicDirectives._
+import spray.routing.directives.RespondWithDirectives._
+import spray.http._
 import spray.http.HttpMethods._
+import spray.http.HttpHeaders._
+import spray.routing.{Route, MethodRejection, RejectionHandler, Directive0}
 import spray.routing._
 
-/**
- * Created by nico on 30/12/15.
- */
-trait CorsSupport {
-  this: HttpService =>
 
-
-  private val allowOriginHeader = `Access-Control-Allow-Origin`(AllOrigins)
-  private val optionsCorsHeaders = List(
-    `Access-Control-Allow-Headers`("Origin, Authorization, X-Requested-With, Content-Type, Accept, Accept-Encoding, Accept-Language, Host, Referer, User-Agent"),
-    `Access-Control-Max-Age`(1728000))
-
-  def cors[T]: Directive0 = mapRequestContext { ctx => ctx.withRouteResponseHandling({
-    //It is an option requeset for a resource that responds to some other method
-    case Rejected(x) if (ctx.request.method.equals(HttpMethods.OPTIONS) && !x.filter(_.isInstanceOf[MethodRejection]).isEmpty) => {
-      val allowedMethods: List[HttpMethod] = x.filter(_.isInstanceOf[MethodRejection]).map(rejection=> {
-        rejection.asInstanceOf[MethodRejection].supported
-      })
-      ctx.complete(HttpResponse().withHeaders(
-        `Access-Control-Allow-Methods`(OPTIONS, allowedMethods :_*) ::  allowOriginHeader ::
-          optionsCorsHeaders
-      ))
-    }
-  }).withHttpResponseHeadersMapped { headers =>
-    allowOriginHeader :: headers
+trait CorsSupport extends HttpService {
+  lazy val allowedOrigin: AllowedOrigins = {
+//    val config = ConfigFactory.load()
+    // val sAllowedOrigin = config.getString("cors.allowed-origin")
+//    val sAllowedOrigin = "http://localhost:4000"
+    val sAllowedOrigin = Seq("http://localhost:4000")
+    SomeOrigins(sAllowedOrigin.map(x => HttpOrigin(x)))
+//      Seq(HttpOrigin(sAllowedOrigin)))
   }
+
+  lazy val origin2 = SomeOrigins(Seq(HttpOrigin("https://nuata.org")))
+
+  //this directive adds access control headers to normal responses
+  private def addAccessControlHeaders: Directive0 = {
+    mapHttpResponseHeaders { headers =>
+      `Access-Control-Allow-Origin`(allowedOrigin) +:
+//        `Access-Control-Allow-Origin`(origin2) +:
+        `Access-Control-Allow-Credentials`(true) +:
+        `Access-Control-Allow-Headers`("Authorization", "Content-Type", "X-Requested-With") +:
+        headers
+    }
+  }
+
+  //this handles preflight OPTIONS requests. TODO: see if can be done with rejection handler,
+  //otherwise has to be under addAccessControlHeaders
+  private def preflightRequestHandler: Route = options {
+    complete(HttpResponse(200).withHeaders(
+      `Access-Control-Allow-Methods`(OPTIONS, POST, PUT, GET, DELETE)
+    )
+    )
+  }
+
+  def cors(r: Route) = addAccessControlHeaders {
+    preflightRequestHandler ~ r
   }
 }
