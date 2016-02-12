@@ -1,48 +1,94 @@
 package org.nuata.services
 
-import java.io.File
-
-import org.json4s.Extraction._
-import org.json4s.JsonAST.JObject
-import org.json4s.JsonDSL._
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.json4s.{DefaultFormats, Extraction}
-import org.nuata.models.queries.SearchQuery
-import org.nuata.repositories.{DimensionRepository, OoiRepository, _}
+import org.json4s.jackson.JsonMethods._
+import org.nuata.models.wikidata.EsWikiDataItem
 import org.nuata.services.routing.RouteRegistration
-import org.nuata.shared._
-import spray.routing.PathMatchers.Segment
-import spray.routing._
+import org.nuata.shared.{ElasticSearch, Json4sProtocol}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future._
-import scala.util.Try
 
 /**
- * Created by nico on 27/12/15.
+ * Created by nico on 10/02/16.
  */
-trait WikiDataService extends RouteRegistration {
-  val outPath = "/home/nico/data/wikidata/parts"
-
-  def getWikiDataResource(id: String) : Option[File] = {
-    if(id.size < 2) {
-      None
-    } else {
-      val idParts = id.splitAt(1)
-      val kind = idParts._1
-      Try(idParts._2.toInt).toOption.map { num =>
-        val firstLevel = num / 1000000
-        val secondLevel = (num - (1000000 * firstLevel)) / 1000
-        new File(outPath + "/" + kind + "/" + firstLevel + "/" + secondLevel + "/" + id + ".json")
-      }.filter(_.exists())
-    }
-  }
+trait WikiDataService extends RouteRegistration with Json4sProtocol {
 
   registerRoute {
-    (path("wikidata" / Segment) & get) { id =>
-      getWikiDataResource(id).map { file =>
-        getFromFile(file)
-      }.getOrElse {
-        complete("invalid id")
+    (pathPrefix("wiki") & path("items" / Segment) & get) { query =>
+      complete {
+        ElasticSearch.client.execute( search in "wikidata" / "items" query {
+          filter {
+            nestedQuery("labels").query(
+              filter(
+                bool(
+                  must(
+                    Seq(
+                      bool(
+                        should(
+                          Seq(
+                            termQuery("labels.aliases.raw", query),
+                            termQuery("labels.name.raw", query)
+                          ) :_*
+                        )
+                      ),
+                      termQuery("labels.lang", "en"))
+                    : _*)
+                  )
+                )
+            )
+          }
+        } size 10).map { res =>
+          val hitJs = for(hit <- res.hits) yield {
+            val item = hit.as[EsWikiDataItem]
+            item.copy(labels = item.labels.filter(_.lang == "en"))
+          }
+          Extraction.decompose(hitJs)
+        }
+      }
+    } ~
+      (pathPrefix("wiki") & path("attributes" / Segment) & get) { query =>
+      complete {
+        ElasticSearch.client.execute( search in "wikidata" / "prop" query {
+          filter {
+            nestedQuery("labels").query(
+              filter(
+                bool(
+                  must(
+                    Seq(
+                      termQuery("labels.name.raw", query),
+                      termQuery("labels.lang", "en"))
+                    : _*)
+                  )
+                )
+            )
+          }
+        } size 10).map { res =>
+          val hitJs = for(hit <- res.hits) yield {
+            val item = hit.as[EsWikiDataItem]
+            item.copy(labels = item.labels.filter(_.lang == "en"))
+          }
+          Extraction.decompose(hitJs)
+        }
+      }
+    } ~
+      (pathPrefix("wiki") & path("item" / Segment) & get) { q =>
+      complete {
+        ElasticSearch.client.execute( ElasticDsl.get id q from "wikidata" / "items" ).map { res =>
+        implicit val formats = DefaultFormats
+          val item = parse(res.sourceAsString)
+
+          Extraction.decompose(item)
+        }
+      }
+    } ~
+      (pathPrefix("wiki") & path("attribute" / Segment) & get) { q =>
+      complete {
+        ElasticSearch.client.execute( ElasticDsl.get id q from "wikidata" / "prop" ).map { res =>
+          Extraction.decompose(parse(res.sourceAsString))
+        }
       }
     }
   }
