@@ -1,6 +1,7 @@
 //import deployssh.DeploySSH.{ArtifactSSH, ServerConfig}
 
 import sbtassembly.AssemblyKeys.assemblyOutputPath
+import sbtassembly.{PathList, MergeStrategy}
 
 organization  := "org.nuata"
 
@@ -13,14 +14,25 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 
 // Fix bug in assembly task for elastic4s with joda convert
-assemblyExcludedJars in assembly := {
-  val cp = (fullClasspath in assembly).value
-  cp filter {_.data.getName == "joda-convert-1.7.jar"}
+//assemblyExcludedJars in assembly := {
+//  val cp = (fullClasspath in assembly).value
+//  cp filter { foo => foo.data.getName == "joda-time-2.8.2.jar"}
+//}
+
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+ {
+ case PathList("org", "joda", "time", "base", "BaseDateTime.class")     => MergeStrategy.first
+//  case "BaseDateTime.class"     => MergeStrategy.first
+  case x =>
+    //val old = (mergeStrategy in assembly).value
+       old(x)
+   }
 }
 
 libraryDependencies ++= {
   val akkaV = "2.3.9"
   val sprayV = "1.3.3"
+  val elasticSearchV = "2.2.0"
   Seq(
     "io.spray"            %%  "spray-can"     % sprayV,
     "io.spray"            %%  "spray-routing" % sprayV,
@@ -35,8 +47,10 @@ libraryDependencies ++= {
     "org.slf4j"    % "slf4j-api"    % "1.7.1",
     "org.slf4j"    % "log4j-over-slf4j"  % "1.7.1",
 
-    // Joda time
-    "joda-time" % "joda-time" % "2.8.2",
+    // Elasticsearch
+    ("com.sksamuel.elastic4s" %% "elastic4s-core" % elasticSearchV % "provided").exclude("org.joda.time.base", "base"),
+    "com.sksamuel.elastic4s" % "elastic4s-jackson_2.11" % elasticSearchV,
+
 
     // Json4s
     "org.json4s" %% "json4s-jackson" % "3.3.0",
@@ -54,9 +68,9 @@ libraryDependencies ++= {
     // Http request
     "org.scalaj" %% "scalaj-http" % "2.2.0",
 
-    // Elasticsearch
-    "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4",
-    "com.sksamuel.elastic4s" % "elastic4s-jackson_2.11" % "1.7.4"
+    // Joda time
+    "joda-time" % "joda-time" % "2.8.2"
+
   )
 }
 
