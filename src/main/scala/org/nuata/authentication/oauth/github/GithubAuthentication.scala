@@ -22,8 +22,6 @@ import spray.httpx.encoding.{Deflate, Gzip}
 case class GithubAuthentication() extends Json4sProtocol {
   implicit val system = ActorSystem()
 
-  val conf = Settings.conf
-
   val pipeline: HttpRequest => Future[HttpResponse] = (
     addHeader(Accept(MediaTypes.`application/json`))
       ~> encode(Gzip)
@@ -41,8 +39,8 @@ case class GithubAuthentication() extends Json4sProtocol {
 
   def generateAccessToken(authCode: String, state: String): Future[Boolean] = {
     if (state == apiAuthState) {
-      val clientId = conf.getString("github.clientId")
-      val clientSecret = conf.getString("github.clientSecret")
+      val clientId = Settings.getString("github.clientId")
+      val clientSecret = Settings.getString("github.clientSecret")
       val authRequestUri = s"https://github.com/login/oauth/access_token?code=${authCode}&client_id=${clientId}&client_secret=${clientSecret}"
 
       tokenPipeline(Get(authRequestUri))

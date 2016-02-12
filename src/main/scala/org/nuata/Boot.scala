@@ -22,5 +22,5 @@ object Boot extends App with SinglePID {
 
   implicit val timeout = Timeout(5.seconds)
   // start a new HTTP server on port 8080 with our service actor as the handler
-  IO(Http) ? Http.Bind(service, interface = Settings.conf.getString("server.interface"), port = Settings.conf.getInt("server.port"))
+  IO(Http) ? Http.Bind(service, interface = Settings.getString("server.interface"), port = Settings.getInt("server.port"))
 }

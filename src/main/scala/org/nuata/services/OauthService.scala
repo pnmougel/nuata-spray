@@ -46,8 +46,8 @@ trait OauthService extends RouteRegistration with Json4sProtocol {
 
   registerRoute {
     (path("auth" / "github") & post & entity(as[GithubCode]) ) { rq =>
-      val clientId = Settings.conf.getString("github.clientId")
-      val clientSecret = Settings.conf.getString("github.clientSecret")
+      val clientId = Settings.getString("github.clientId")
+      val clientSecret = Settings.getString("github.clientSecret")
 
       val future = tokenPipeline(Get(s"https://github.com/login/oauth/access_token?code=${rq.code}&client_id=${clientId}&client_secret=${clientSecret}"))
         .flatMap( tokenInfo => {
@@ -65,10 +65,10 @@ trait OauthService extends RouteRegistration with Json4sProtocol {
 
   registerRoute {
     (path("auth" / "facebook") & post & entity(as[GithubCode]) ) { rq =>
-      val clientId = Settings.conf.getString("facebook.clientId")
-      val clientSecret = Settings.conf.getString("facebook.clientSecret")
-      val apiVersion = Settings.conf.getString("facebook.apiVersion")
-      val redirectUri = Settings.conf.getString("facebook.redirectUri")
+      val clientId = Settings.getString("facebook.clientId")
+      val clientSecret = Settings.getString("facebook.clientSecret")
+      val apiVersion = Settings.getString("facebook.apiVersion")
+      val redirectUri = Settings.getString("facebook.redirectUri")
 
       val tokenUrl = s"https://graph.facebook.com/${apiVersion}/oauth/access_token?client_id=${clientId}&redirect_uri=${redirectUri}&client_secret=${clientSecret}&code=${rq.code}"
       val future = tokenPipeline(Get(tokenUrl))
@@ -87,9 +87,9 @@ trait OauthService extends RouteRegistration with Json4sProtocol {
 
   registerRoute {
     (path("auth" / "google") & post & entity(as[GithubCode]) ) { rq =>
-      val clientId = Settings.conf.getString("google.clientId")
-      val clientSecret = Settings.conf.getString("google.clientSecret")
-      val apiVersion = Settings.conf.getString("google.apiVersion")
+      val clientId = Settings.getString("google.clientId")
+      val clientSecret = Settings.getString("google.clientSecret")
+      val apiVersion = Settings.getString("google.apiVersion")
 
        val tokenUrl = s"https://www.googleapis.com/oauth2/${apiVersion}/token?client_id=${clientId}&redirect_uri=${rq.redirectUri}&client_secret=${clientSecret}&code=${rq.code}&grant_type=authorization_code"
 
