@@ -33,6 +33,7 @@ trait IndexService extends RouteRegistration with Json4sProtocol with Authentica
       val itemsSeq = items.asInstanceOf[Array[_]]
       val indexQueries = itemsSeq.map( item => index into "nuata" / name source item)
       complete {
+
         ElasticSearch.client.execute(bulk (indexQueries) ).map( results => {
           // val newChildrenForParent = mutable.HashMap[Future[Dimension], Vector[String]]()
 //          val newChildrenForParent = mutable.HashMap[Dimension, Vector[String]]()

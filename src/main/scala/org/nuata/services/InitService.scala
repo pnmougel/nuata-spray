@@ -1,6 +1,6 @@
 package org.nuata.services
 
-import com.sksamuel.elastic4s.{LowercaseTokenFilter, KeywordTokenizer, CustomAnalyzerDefinition}
+import com.sksamuel.elastic4s.analyzers._
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.nuata.services.routing.RouteRegistration
 import org.nuata.shared.{Languages, ElasticSearch}

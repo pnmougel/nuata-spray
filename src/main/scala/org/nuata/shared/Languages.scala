@@ -1,6 +1,6 @@
 package org.nuata.shared
 
-import com.sksamuel.elastic4s.{EnglishLanguageAnalyzer, FrenchLanguageAnalyzer}
+import com.sksamuel.elastic4s.analyzers.{FrenchLanguageAnalyzer, EnglishLanguageAnalyzer}
 
 /**
  * Created by nico on 02/11/15.

@@ -8,8 +8,6 @@ import org.nuata.repositories.SourceRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import scala.reflect.runtime.universe._
-
 /**
  * Created by nico on 02/11/15.
  */

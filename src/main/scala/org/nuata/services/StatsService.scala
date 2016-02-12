@@ -29,7 +29,7 @@ trait StatsService extends RouteRegistration with Json4sProtocol {
               "facts" -> facts.getCount,
               "dimensions" -> dimensions.getCount,
               "categories" -> categories.getCount,
-              //              "oois" -> oois.getCount,
+              "oois" -> oois.getCount,
               "sources" -> sources.getCount,
               "users" -> users.getCount
             ))

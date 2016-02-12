@@ -1,6 +1,7 @@
 package org.nuata.repositories
 
 import com.github.t3hnar.bcrypt._
+import com.sksamuel.elastic4s.ElasticDsl
 import com.sksamuel.elastic4s.jackson.ElasticJackson
 import org.elasticsearch.action.search.SearchResponse
 import org.json4s._
@@ -41,7 +42,7 @@ object UserRepository extends BaseRepository[User]("user") {
     } else {
       val token = Random.alphanumeric.take(64).mkString
       client.execute {
-        search in "nuata" / "user" query termQuery("token", token)
+        search in path query termQuery("token", token)
       }.flatMap { res =>
         if(res.getHits.getTotalHits > 0) {
           generateToken()
@@ -55,7 +56,7 @@ object UserRepository extends BaseRepository[User]("user") {
   def generateTokenForUser(userId: String) : Future[String] = {
     generateToken().flatMap { token =>
       client.execute {
-        update id userId in "nuata" / "user" doc(
+        update id userId in path doc(
           "token" -> token,
           "token_created_at" -> new java.util.Date())
       }.map(res => {
@@ -66,7 +67,7 @@ object UserRepository extends BaseRepository[User]("user") {
 
   def getUserByToken(token: BearerToken): Future[Option[User]] = {
     client.execute {
-      search in "nuata" / "user" query termQuery("token", token)
+      search in path query termQuery("token", token)
     }.map(res => {
       if(res.totalHits == 1) {
         Some(res.as[User].head)
@@ -78,16 +79,14 @@ object UserRepository extends BaseRepository[User]("user") {
 
   def createUser(email: String, name: Option[String]) = {
     val userAccount = User(None, None, email, name, Role.User)
-    client.execute {
-      index into "nuata" / "user" source userAccount
-    }.flatMap(res => {
+    UserRepository.index(userAccount).flatMap(res => {
       generateTokenForUser(res.getId)
     })
   }
 
   def getUser(login: String): Future[Option[User]] = {
     client.execute {
-      search in "nuata" / "user" query termQuery("login", login)
+      search in path query termQuery("login", login)
     }.map(res => {
       if(res.totalHits == 1) {
         Some(res.as[User].head)
@@ -98,13 +97,13 @@ object UserRepository extends BaseRepository[User]("user") {
   }
 
   def emailExists(email: String) : Future[Boolean] = {
-    client.execute { search in "nuata" / "user" query termQuery("email", email) }
+    client.execute { search in path query termQuery("email", email) }
       .map(res => res.totalHits != 0)
   }
 
   def accountExists(login: String, email: String) : Future[Boolean] = {
     client.execute {
-      search in "nuata" / "user" query bool { should {
+      search in path query bool { should {
         Seq(termQuery("login", login), termQuery("email", email))
       }}
     }.map(res => {
