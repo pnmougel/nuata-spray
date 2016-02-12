@@ -33,7 +33,7 @@ trait IconService extends RouteRegistration with Json4sProtocol {
   def getIcon(size: Int, format: String): File = {
     val outputDirPath = "cache/icon/"
     val outputFile = new File(s"${outputDirPath}icon_${size}.${format}")
-    val useCache = false
+    val useCache = true
     if (!outputFile.exists() || !useCache) {
       val bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB)
       val g = bi.getGraphics.asInstanceOf[Graphics2D]
