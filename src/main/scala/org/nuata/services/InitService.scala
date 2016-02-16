@@ -1,20 +1,21 @@
 package org.nuata.services
 
+import akka.actor.ActorRefFactory
 import com.sksamuel.elastic4s.analyzers._
 import com.sksamuel.elastic4s.ElasticDsl._
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.{Languages, ElasticSearch}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.mappings._
 import com.sksamuel.elastic4s.mappings.FieldType._
-import spray.routing.HttpService
+import spray.routing._
 
 /**
  * Created by nico on 28/12/15.
  */
-trait InitService extends RouteRegistration {
-  registerRoute {
+object InitService extends RouteProvider {
+  def route(implicit settings : RoutingSettings, refFactory : ActorRefFactory) : Route =  {
     path("init") {
       post {
         complete {

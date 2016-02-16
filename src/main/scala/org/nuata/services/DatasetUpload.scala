@@ -1,9 +1,10 @@
 package org.nuata.services
 
+import akka.actor.ActorRefFactory
 import org.json4s.Extraction
 import org.nuata.models._
 import org.nuata.repositories._
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.Json4sProtocol
 import spray.http.MultipartFormData
 import spray.http.StatusCodes._
@@ -13,13 +14,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * Created by nico on 19/01/16.
  */
-trait DatasetUpload extends RouteRegistration {
+object DatasetUpload extends RouteProvider {
 
   def createDataset(content: Array[Byte]) = {
 
   }
 
-  registerRoute {
+  def route(implicit settings : RoutingSettings, refFactory : ActorRefFactory) : Route = {
     (pathPrefix("dataset") & post & entity(as[MultipartFormData])) { rq =>
       for(f <- rq.fields) {
         println(f.disposition)

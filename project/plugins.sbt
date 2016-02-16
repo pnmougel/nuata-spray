@@ -1,3 +1,6 @@
+
+addSbtPlugin("me.lessis" % "bintray-sbt" % "0.1.1")
+
 resolvers += "JAnalyse Repository" at "http://www.janalyse.fr/repository/"
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.2")

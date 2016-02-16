@@ -1,12 +1,13 @@
 package org.nuata.services
 
+import akka.actor.ActorRefFactory
 import com.typesafe.config.ConfigFactory
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.{DefaultFormats, Extraction}
 import org.nuata.models.queries.SearchQuery
 import org.nuata.repositories.{DimensionRepository, OoiRepository, _}
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared._
 import spray.routing._
 
@@ -17,7 +18,7 @@ import org.json4s.Extraction._
 /**
  * Created by nico on 27/12/15.
  */
-trait SearchService extends RouteRegistration with Json4sProtocol {
+object SearchService extends RouteProvider with Json4sProtocol {
   implicit val formats = DefaultFormats
 
   val items = Map(
@@ -29,7 +30,7 @@ trait SearchService extends RouteRegistration with Json4sProtocol {
     "unit" -> UnitRepository
   )
 
-  registerRoute {
+  def route(implicit settings: RoutingSettings, refFactory: ActorRefFactory): Route =  {
     (path("search") & get & parameterMultiMap) { params =>
       QueryParams.as[SearchQuery](params) match {
         case Left(errors) => reject(MalformedQueryParamRejection(errors._1, errors._2))

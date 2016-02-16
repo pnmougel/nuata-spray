@@ -1,7 +1,10 @@
 package org.nuata.services
 
 import org.nuata.directives.CorsSupport
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
+import org.reflections.Reflections
+import spray.routing._
+import scala.collection.JavaConversions._
 import spray.routing._
 
 /**
@@ -9,23 +12,24 @@ import spray.routing._
  */
 trait RouteService
   extends HttpService
-  with RouteRegistration
-  with SearchService
-  with IndexService
-  with LanguageDetectorService
-  with InitService
-  with StatsService
-  with UserService
   with CorsSupport
-  with OauthService
-  with WikiDataService
-  with DatasetUpload
-  with IconService
 {
+
+  val reflections = new Reflections("org.nuata")
+  val subTypes = reflections.getSubTypesOf(classOf[org.nuata.services.routing.RouteProvider])
+  val routesProvided =
+    (for(subType <- subTypes;
+      constructor <- subType.getDeclaredConstructors
+      if constructor.getParameterCount == 0
+  ) yield {
+    constructor.setAccessible(true)
+    val obj = constructor.newInstance().asInstanceOf[RouteProvider]
+    obj.route
+  }).reduce((a, b) => { a ~ b })
 
   val routes = {
     cors {
-      allRoutes
+      routesProvided
     }
   }
 }

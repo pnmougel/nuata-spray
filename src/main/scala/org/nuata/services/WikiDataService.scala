@@ -2,18 +2,20 @@ package org.nuata.services
 
 import java.util
 
+import akka.actor.ActorRefFactory
 import com.sksamuel.elastic4s.ElasticDsl
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.json4s.{DefaultFormats, Extraction}
 import org.json4s.jackson.JsonMethods._
 import org.nuata.models.wikidata.EsWikiDataItem
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.{ElasticSearch, Json4sProtocol}
 import spray.client.pipelining._
 import spray.http.HttpHeaders.Accept
 import spray.http.{MediaTypes, HttpResponse, HttpRequest}
 import spray.httpx.encoding.{Deflate, Gzip}
+import spray.routing._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConversions._
@@ -22,9 +24,8 @@ import scala.concurrent.Future
 /**
  * Created by nico on 10/02/16.
  */
-trait WikiDataService extends RouteRegistration with Json4sProtocol {
-
-  registerRoute {
+object WikiDataService extends RouteProvider with Json4sProtocol {
+  def route(implicit settings: RoutingSettings, refFactory: ActorRefFactory): Route =  {
     (pathPrefix("wiki") & path("items" / Segment) & get) { query =>
       complete {
         ElasticSearch.client.execute( search in "wikidata" / "items" query {

@@ -1,9 +1,10 @@
 package org.nuata.services
 
+import akka.actor.ActorRefFactory
 import org.json4s.Extraction
 import org.nuata.models._
 import org.nuata.repositories._
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.{ElasticSearch, Json4sProtocol}
 import spray.http.StatusCodes._
 import spray.routing._
@@ -13,8 +14,14 @@ import scala.concurrent.Future._
 /**
  * Created by nico on 31/12/15.
  */
-trait SearchFactService extends RouteRegistration with Json4sProtocol {
+object SearchFactService extends RouteProvider with Json4sProtocol {
   val validItemTypes = Map("category" -> "categoryIds", "dimension" -> "dimensionIds", "unit" -> "", "ooi" -> "ooiIds")
+
+  def route(implicit settings: RoutingSettings, refFactory: ActorRefFactory): Route = {
+    (path("search") & get) {
+      complete("Ok")
+    }
+  }
 
   /*
   def searchFacts(query: String, dimensionIds: List[String], categoryIds: List[String], unitIds: List[String], ooiIds: List[String]) {

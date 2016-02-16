@@ -5,12 +5,13 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
+import akka.actor.ActorRefFactory
 import org.json4s.Extraction
 import org.nuata.directives.CorsSupport
 import org.nuata.models._
 import org.nuata.models.queries.UserAccountQuery
 import org.nuata.repositories._
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.Json4sProtocol
 import spray.http.{MediaTypes, MediaType}
 import spray.http.StatusCodes._
@@ -23,7 +24,7 @@ import MediaTypes._
 /**
  * Created by nico on 30/12/15.
  */
-trait IconService extends RouteRegistration with Json4sProtocol {
+object IconService extends RouteProvider with Json4sProtocol {
   val fontInputStream = this.getClass.getResourceAsStream("/fonts/Questrial-Regular.ttf")
 
   val ge = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -61,7 +62,7 @@ trait IconService extends RouteRegistration with Json4sProtocol {
   val validImageFormats = Set("png", "jpg", "svg")
   val sizeNameToSize = Map[String, Int]("tiny" -> 16, "small" -> 32, "medium" -> 64, "large" -> 128)
 
-  registerRoute {
+  def route(implicit settings : RoutingSettings, refFactory : ActorRefFactory) = {
     (path("icon" / IntNumber / Segment.?) & get) { (size, format) =>
       val imgFormat = (for(imgFormat <- format; if validImageFormats.contains(imgFormat.toLowerCase)) yield {
         imgFormat.toLowerCase

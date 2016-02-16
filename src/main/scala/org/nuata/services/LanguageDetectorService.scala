@@ -1,20 +1,22 @@
 package org.nuata.services
 
+import akka.actor.ActorRefFactory
 import com.optimaize.langdetect.LanguageDetectorBuilder
 import com.optimaize.langdetect.ngram.NgramExtractors
 import com.optimaize.langdetect.profiles.LanguageProfileReader
 import com.optimaize.langdetect.text.CommonTextObjectFactories
 import org.nuata.authentication.Authenticator
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.Settings
-import spray.routing.HttpService
+import spray.routing._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * Created by nico on 28/12/15.
  */
-trait LanguageDetectorService extends HttpService with Authenticator with RouteRegistration {
-  registerRoute { path("language" / Segment) { text =>
+object LanguageDetectorService extends RouteProvider with Authenticator {
+  def route(implicit settings : RoutingSettings, refFactory : ActorRefFactory) : Route = {
+    path("language" / Segment) { text =>
     get {
       //      authenticate(basicUserAuthenticator) { authInfo =>
       //        authorize(authInfo.hasPermission("test")) {

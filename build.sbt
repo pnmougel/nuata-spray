@@ -2,6 +2,7 @@
 
 import sbtassembly.AssemblyKeys.assemblyOutputPath
 import sbtassembly.{PathList, MergeStrategy}
+import spray.revolver.RevolverPlugin.Revolver
 
 organization  := "org.nuata"
 
@@ -68,11 +69,14 @@ libraryDependencies ++= {
     // Http request
     "org.scalaj" %% "scalaj-http" % "2.2.0",
 
+    // Reflections
+    "org.reflections" % "reflections" % "0.9.10",
+
     // Joda time
     "joda-time" % "joda-time" % "2.8.2"
-
   )
 }
+
 
 lazy val root = (project in file("."))
   .settings(
@@ -120,6 +124,7 @@ deploy := {
 }
 
 (deploy) <<= (deploy) dependsOn (assembly)
+
 
 
 Revolver.settings

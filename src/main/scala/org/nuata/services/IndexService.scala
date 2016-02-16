@@ -1,13 +1,14 @@
 package org.nuata.services
 
+import akka.actor.ActorRefFactory
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.nuata.authentication.Authenticator
 import org.nuata.models._
 import org.nuata.repositories.DimensionRepository
-import org.nuata.services.routing.RouteRegistration
+import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.{ElasticSearch, Json4sProtocol}
-import spray.routing.{Directive1, HttpService}
+import spray.routing._
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,7 +18,7 @@ import scala.concurrent.Future._
 /**
  * Created by nico on 28/12/15.
  */
-trait IndexService extends RouteRegistration with Json4sProtocol with Authenticator {
+object IndexService extends RouteProvider with Json4sProtocol with Authenticator {
 
   val nameToDirective = Map[String, Directive1[_]](
     "unit" -> entity(as[Array[Unit]]),
@@ -27,7 +28,7 @@ trait IndexService extends RouteRegistration with Json4sProtocol with Authentica
     "fact" -> entity(as[Array[Fact]]),
     "ooi" -> entity(as[Array[Ooi]]))
 
-  registerRoute {
+  def route(implicit settings : RoutingSettings, refFactory : ActorRefFactory) : Route =  {
     (for((name, directive) <- nameToDirective) yield {
     (path(name) & post & directive ) { items =>
       val itemsSeq = items.asInstanceOf[Array[_]]
