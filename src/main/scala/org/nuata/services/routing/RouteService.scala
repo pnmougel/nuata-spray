@@ -12,9 +12,9 @@ import spray.routing._
  */
 trait RouteService
   extends HttpService
-  with CorsSupport
-{
+  with CorsSupport {
 
+  // Dynamically load the routes
   val reflections = new Reflections("org.nuata")
   val subTypes = reflections.getSubTypesOf(classOf[org.nuata.services.routing.RouteProvider])
   val routesProvided =
