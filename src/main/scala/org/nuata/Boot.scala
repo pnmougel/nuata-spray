@@ -8,13 +8,14 @@ import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
 import org.nuata.actors.HttpActor
+import org.nuata.mock.generators.LabelGenerator
 import org.nuata.shared.{SinglePID, Settings}
 import spray.can.Http
 
 import scala.concurrent.duration._
 
 object Boot extends App with SinglePID {
-  // we need an ActorSystem to host our application in
+  // we need an ActorSystem to host our application
   implicit val system = ActorSystem("nuata-system")
 
   // create and start our service actor
