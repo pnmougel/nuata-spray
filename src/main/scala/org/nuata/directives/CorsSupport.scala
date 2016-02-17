@@ -20,6 +20,7 @@ trait CorsSupport extends HttpService {
     val sAllowedOrigin = Seq("http://localhost:4000")
     SomeOrigins(sAllowedOrigin.map(x => HttpOrigin(x)))
 //      Seq(HttpOrigin(sAllowedOrigin)))
+    AllOrigins
   }
 
   lazy val origin2 = SomeOrigins(Seq(HttpOrigin("https://nuata.org")))
