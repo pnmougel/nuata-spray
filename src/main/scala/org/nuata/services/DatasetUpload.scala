@@ -2,9 +2,8 @@ package org.nuata.services
 
 import akka.actor.ActorRefFactory
 import org.json4s.Extraction
+import org.nuata.core.routing.RouteProvider
 import org.nuata.models._
-import org.nuata.repositories._
-import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.Json4sProtocol
 import spray.http.MultipartFormData
 import spray.http.StatusCodes._

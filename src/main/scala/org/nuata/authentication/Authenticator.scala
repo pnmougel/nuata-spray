@@ -3,7 +3,6 @@ package org.nuata.authentication
 import com.typesafe.config.Config
 import org.nuata.authentication.Role._
 import org.nuata.authentication.bearer.{BearerToken, BearerTokenHttpAuthenticator}
-import org.nuata.repositories.UserRepository
 import spray.http.HttpHeaders.{Authorization, `WWW-Authenticate`}
 import spray.http._
 import spray.routing.AuthenticationFailedRejection.{CredentialsRejected, CredentialsMissing}
@@ -16,9 +15,6 @@ import scala.concurrent.{Future, ExecutionContext}
 /**
  * Created by nico on 29/12/15.
  */
-
-
-
 trait Authenticator {
   def basicUserAuthenticator(implicit ec: ExecutionContext): AuthMagnet[AuthInfo] = {
     def validateUser(bearerToken: Option[BearerToken]): Future[Option[AuthInfo]] = {

@@ -24,6 +24,7 @@ object QueryParams {
   def toDoubleOpt(v: String) = Try(v.toDouble).toOption
   def toDateOpt(v: String) = Try(dateParser.parseDateTime(v).toDate).toOption
   def toDateTimeOpt(v: String) = Try(dateParser.parseDateTime(v)).toOption
+  def toBooleanOpt(v: String) = Try(v.toBoolean).toOption
 
   def as[T](params: Map[String, List[String]])(implicit tag: TypeTag[T]) = {
     var args = Vector[Any]()
@@ -65,6 +66,11 @@ object QueryParams {
             case t if check[String](t) => first
             case t if t <:< typeOf[Option[String]] => Some(first)
             case t if t <:< typeOf[List[String]] => values
+
+            // Boolean
+            case t if t <:< typeOf[Boolean] => handleOpt(toBooleanOpt(first), name, s"boolean value required")
+            case t if t <:< typeOf[Option[Boolean]] => toBooleanOpt(first)
+            case t if t <:< typeOf[List[Boolean]] => values.flatMap(toBooleanOpt)
 
             // Int
             case t if t <:< typeOf[Int] => handleOpt(toIntOpt(first), name, s"integer value required")

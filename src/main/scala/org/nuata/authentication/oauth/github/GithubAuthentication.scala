@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import org.json4s._
-import org.nuata.repositories.UserRepository
+import org.nuata.authentication.UserRepository
 import org.nuata.shared.{Json4sProtocol, Settings}
 import spray.http.{HttpRequest, HttpResponse, MediaTypes, OAuth2BearerToken}
 

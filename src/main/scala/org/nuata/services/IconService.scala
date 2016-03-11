@@ -7,11 +7,10 @@ import javax.imageio.ImageIO
 
 import akka.actor.ActorRefFactory
 import org.json4s.Extraction
-import org.nuata.directives.CorsSupport
+import org.nuata.authentication.queries.UserAccountQuery
+import org.nuata.core.directives.CorsSupport
+import org.nuata.core.routing.RouteProvider
 import org.nuata.models._
-import org.nuata.models.queries.UserAccountQuery
-import org.nuata.repositories._
-import org.nuata.services.routing.RouteProvider
 import org.nuata.shared.Json4sProtocol
 import spray.http.{MediaTypes, MediaType}
 import spray.http.StatusCodes._

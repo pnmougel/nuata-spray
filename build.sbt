@@ -72,6 +72,13 @@ libraryDependencies ++= {
     // Reflections
     "org.reflections" % "reflections" % "0.9.10",
 
+    // Kamon monitoring
+    "io.kamon" %% "kamon-core" % "0.5.2",
+    "io.kamon" %% "kamon-statsd" % "0.5.2",
+    "io.kamon" %% "kamon-spray" % "0.5.2",
+    "io.kamon" %% "kamon-system-metrics" % "0.5.2",
+
+
     // Joda time
     "joda-time" % "joda-time" % "2.8.2"
   )
@@ -128,3 +135,18 @@ deploy := {
 
 
 Revolver.settings
+
+// Enable aspectj for kamon
+aspectjSettings
+
+lazy val foo = taskKey[Unit]("Foo task")
+foo := {
+}
+
+
+javaOptions in run <++= AspectjKeys.weaverOptions in Aspectj
+// javaOptions in Revolver.reStart += "-javaagent:~/.ivy2/aspectj/aspectj-weaver.jar your-app.jar"
+javaOptions in Revolver.reStart <++= AspectjKeys.weaverOptions in Aspectj
+
+fork in run := true
+

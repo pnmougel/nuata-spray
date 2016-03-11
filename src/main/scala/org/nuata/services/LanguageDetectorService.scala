@@ -6,7 +6,7 @@ import com.optimaize.langdetect.ngram.NgramExtractors
 import com.optimaize.langdetect.profiles.LanguageProfileReader
 import com.optimaize.langdetect.text.CommonTextObjectFactories
 import org.nuata.authentication.Authenticator
-import org.nuata.services.routing.RouteProvider
+import org.nuata.core.routing.RouteProvider
 import org.nuata.shared.Settings
 import spray.routing._
 

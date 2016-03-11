@@ -1,8 +1,11 @@
 package org.nuata.models
 
 /**
- * Created by nico on 03/11/15.
+ * Created by nico on 24/02/16.
  */
-abstract class EsModel[T](_id: Option[String], _score: Option[Double]) {
-  def withId(_id: String) : T
+trait EsModel[T] {
+  def _id: Option[String]
+  def _score: Option[Double]
+
+  def withId(id: String) : T
 }
