@@ -9,7 +9,8 @@ import org.json4s._
 import org.json4s.ext.{EnumNameSerializer, EnumSerializer}
 import org.json4s.jackson.JsonMethods._
 import org.nuata.authentication.Role
-import org.nuata.models.EsModel
+import org.nuata.models.{Attribute, EsModel}
+import org.nuata.models.queries.SearchQuery
 import org.nuata.shared._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -27,7 +28,7 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
 
   implicit val formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(Role) + new EnumSerializer(Role)
 
-  def count : Future[Long] = client.execute { search in indexName limit 0 } map { res =>
+  def count : Future[Long] = client.execute { ElasticDsl.search in indexName limit 0 } map { res =>
     res.totalHits
   }
 
@@ -107,8 +108,16 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
 
   def deleteById(id: String) : Future[Boolean] = {
     client.execute { delete id id from path }.map(res => {
+      println(res.isFound)
       res.isFound
     })
+  }
+
+  def list(searchQuery: SearchQuery) : Future[(Long, Array[T])] = {
+    val start = Math.max(0, searchQuery.limit * (searchQuery.page - 1))
+    client.execute(ElasticDsl.search in path start start limit searchQuery.limit).map { res =>
+      (res.totalHits, res.as[T])
+    }
   }
 
   def update(id: String, f: T => T) : Future[Boolean] = {

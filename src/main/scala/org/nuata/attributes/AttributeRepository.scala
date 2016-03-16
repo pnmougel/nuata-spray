@@ -24,14 +24,24 @@ object AttributeRepository extends NodeRepository[Attribute]("attributes") {
       nestedQuery(s"labels.${query.lang}").query(prefixQuery(s"labels.${query.lang}.name", query.name))
     }
 
+    val instanceOfQuery = query.instanceOf.map { id =>
+      if(id.isEmpty) {
+        matchAllQuery
+      } else {
+        termQuery("instancesOf", id)
+      }
+    }.getOrElse(matchAllQuery)
+
     val dataTypeQuery = if(query.valueType.trim.isEmpty) {
       matchAllQuery
     } else {
       termQuery("valueType", query.valueType)
     }
-    val filterQuery = bool(must(nameQuery, dataTypeQuery))
+    val filterQuery = bool(must(nameQuery, dataTypeQuery, instanceOfQuery))
 
-    client.execute(ElasticDsl.search in path query filterQuery start (query.page * query.limit) limit query.limit).map { res =>
+    val start = Math.max(0, (query.page - 1) * query.limit)
+
+    client.execute(ElasticDsl.search in path query filterQuery start start limit query.limit).map { res =>
       (res.totalHits, res.as[Attribute])
     }
   }
