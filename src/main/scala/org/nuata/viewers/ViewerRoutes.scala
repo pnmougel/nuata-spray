@@ -3,7 +3,7 @@ package org.nuata.viewers
 import akka.actor.ActorRefFactory
 import org.nuata.attributes.queries.AttributeSearchQuery
 import org.nuata.core.directives.GetParamsDirective._
-import org.nuata.models.queries.SearchQuery
+import org.nuata.core.queries.SearchQuery
 import spray.http.StatusCodes._
 import spray.routing._
 import scala.concurrent.ExecutionContext.Implicits.global

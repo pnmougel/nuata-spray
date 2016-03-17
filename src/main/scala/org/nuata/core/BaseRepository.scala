@@ -4,19 +4,21 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.source.Indexable
 import org.elasticsearch.action.get.GetResponse
+import org.elasticsearch.search.sort.SortOrder
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.ext.{EnumNameSerializer, EnumSerializer}
 import org.json4s.jackson.JsonMethods._
 import org.nuata.authentication.Role
+import org.nuata.core.queries.SearchQuery
 import org.nuata.models.{Attribute, EsModel}
-import org.nuata.models.queries.SearchQuery
 import org.nuata.shared._
+import org.nuata.shared.json.DateSerializer
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-
+import scala.concurrent.duration._
 /**
  * Created by nico on 02/11/15.
  */
@@ -26,7 +28,9 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
   val path = indexName / `type`
   val client = ElasticSearch.client
 
-  implicit val formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(Role) + new EnumSerializer(Role)
+//  implicit val formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(Role) + new EnumSerializer(Role)
+//  implicit val formats = DefaultFormats + org.json4s.ext.DateTimeSerializer
+  implicit val formats = DefaultFormats ++ org.json4s.ext.JavaTypesSerializers.all + DateSerializer
 
   def count : Future[Long] = client.execute { ElasticDsl.search in indexName limit 0 } map { res =>
     res.totalHits
@@ -108,14 +112,20 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
 
   def deleteById(id: String) : Future[Boolean] = {
     client.execute { delete id id from path }.map(res => {
-      println(res.isFound)
       res.isFound
     })
   }
 
+  def deleteAll() = {
+    client.iterateSearch(ElasticDsl.search in path)(1 minute).foreach { res =>
+      for(hit <- res.hits) {
+        deleteById(hit.getId)
+      }
+    }
+  }
+
   def list(searchQuery: SearchQuery) : Future[(Long, Array[T])] = {
-    val start = Math.max(0, searchQuery.limit * (searchQuery.page - 1))
-    client.execute(ElasticDsl.search in path start start limit searchQuery.limit).map { res =>
+    client.execute(ElasticDsl.search in path query searchQuery.query sort (searchQuery.sort : _*) start searchQuery.start limit searchQuery.limit).map { res =>
       (res.totalHits, res.as[T])
     }
   }

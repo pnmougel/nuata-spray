@@ -39,6 +39,9 @@ object Settings extends Config {
   def getDuration(path: String, unit: TimeUnit) = conf.getDuration(path, unit)
   def getDurationList(path: String, unit: TimeUnit) = conf.getDurationList(path, unit)
 
+  def getDuration(path: String) = conf.getDuration(path)
+  def getDurationList(path: String) = conf.getDurationList(path)
+
   def getInt(path: String) = conf.getInt(path)
   def getIntList(path: String) = conf.getIntList(path)
 
@@ -51,6 +54,12 @@ object Settings extends Config {
   def getObjectList(path: String) = conf.getObjectList(path)
 
   def getValue(path: String) = conf.getValue(path)
+
+  def getMemorySize(path: String) = conf.getMemorySize(path)
+  def getMemorySizeList(path: String) = conf.getMemorySizeList(path)
+
+  def getIsNull(path: String) = conf.getIsNull(path)
+  def hasPathOrNull(path: String) = conf.hasPathOrNull(path)
 
   @deprecated(message="See conf", since="v1") def getMilliseconds(path: String) = conf.getMilliseconds(path)
   @deprecated(message="See conf", since="v1") def getMillisecondsList(path: String) = conf.getMillisecondsList(path)

@@ -29,14 +29,14 @@ object AttributeRoutes extends RouteProvider with Json4sProtocol {
 //        item.copy(visible = visibility != 0)
       }))
     } ~ (pathPrefix("attribute") & path("search") & get & getParams[AttributeSearchQuery]) { query =>
-      complete(repository.attributeSearch(query).map { case (nbItems, items) =>
+      complete(repository.list(query).map { case (nbItems, items) =>
         decompose(Map("nbItems" -> nbItems, "items" -> items))
       })
     } ~ (pathPrefix("attribute") & path("suggest") & get & getParams[SuggestQuery]) { query =>
       complete(repository.getSuggestions(query))
     } ~ (pathPrefix("attribute") & path("name") & get & getParams[NameQuery]) { query =>
       complete(repository.getNames(query))
-    } ~ (pathPrefix("attribute") & get & getParams[AttributeQuery]) { query =>
+    } ~ (pathPrefix("attribute") & get & getParams[NameQuery]) { query =>
       complete(repository.byIds(query.id))
     }
   }

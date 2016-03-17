@@ -1,8 +1,8 @@
 package org.nuata.core.routing
 
-import kamon.Kamon
-import kamon.metric.instrument.Time
-import kamon.trace.Tracer
+//import kamon.Kamon
+//import kamon.metric.instrument.Time
+//import kamon.trace.Tracer
 import spray.routing._
 
 /**
@@ -20,11 +20,11 @@ trait TracingHttpService extends HttpServiceBase {
       ctx.withHttpResponseMapped { response =>
         val duration = System.nanoTime() - start
         tagBuilder += "status-code" -> response.status.intValue.toString
-        Kamon.metrics.histogram(
-          s"query-response",
-          tagBuilder.result(),
-          Time.Nanoseconds)
-          .record(duration)
+//        Kamon.metrics.histogram(
+//          s"query-response",
+//          tagBuilder.result(),
+//          Time.Nanoseconds)
+//          .record(duration)
         response
       }
     } {

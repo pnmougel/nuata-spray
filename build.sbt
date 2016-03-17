@@ -4,6 +4,18 @@ import sbtassembly.AssemblyKeys.assemblyOutputPath
 import sbtassembly.{PathList, MergeStrategy}
 import spray.revolver.RevolverPlugin.Revolver
 
+// Bring the sbt-aspectj settings into this build
+aspectjSettings
+
+// Here we are effectively adding the `-javaagent` JVM startup
+// option with the location of the AspectJ Weaver provided by
+// the sbt-aspectj plugin.
+javaOptions in run <++= AspectjKeys.weaverOptions in Aspectj
+
+// We need to ensure that the JVM is forked for the
+// AspectJ Weaver to kick in properly and do it's magic.
+fork in run := true
+
 organization  := "org.nuata"
 
 version       := "0.1"
@@ -31,7 +43,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 }
 
 libraryDependencies ++= {
-  val akkaV = "2.3.9"
+  val akkaV = "2.4.2"
   val sprayV = "1.3.3"
   val elasticSearchV = "2.2.0"
   Seq(
@@ -47,9 +59,11 @@ libraryDependencies ++= {
     "org.slf4j"    % "slf4j-simple"    % "1.7.1",
     "org.slf4j"    % "slf4j-api"    % "1.7.1",
     "org.slf4j"    % "log4j-over-slf4j"  % "1.7.1",
+    "com.typesafe.akka" % "akka-slf4j_2.11" % akkaV,
 
     // Elasticsearch
-    ("com.sksamuel.elastic4s" %% "elastic4s-core" % elasticSearchV % "provided").exclude("org.joda.time.base", "base"),
+     ("com.sksamuel.elastic4s" %% "elastic4s-core" % elasticSearchV % "provided").exclude("org.joda.time.base", "base"),
+//    ("com.sksamuel.elastic4s" %% "elastic4s-core" % elasticSearchV % "provided"),
     "com.sksamuel.elastic4s" % "elastic4s-jackson_2.11" % elasticSearchV,
 
 
@@ -73,11 +87,10 @@ libraryDependencies ++= {
     "org.reflections" % "reflections" % "0.9.10",
 
     // Kamon monitoring
-    "io.kamon" %% "kamon-core" % "0.5.2",
-    "io.kamon" %% "kamon-statsd" % "0.5.2",
-    "io.kamon" %% "kamon-spray" % "0.5.2",
-    "io.kamon" %% "kamon-system-metrics" % "0.5.2",
-
+//    "io.kamon" %% "kamon-core" % "0.5.2",
+//    "io.kamon" %% "kamon-statsd" % "0.5.2",
+//    "io.kamon" %% "kamon-spray" % "0.5.2",
+//    "io.kamon" %% "kamon-system-metrics" % "0.5.2",
 
     // Joda time
     "joda-time" % "joda-time" % "2.8.2"
@@ -132,17 +145,10 @@ deploy := {
 
 (deploy) <<= (deploy) dependsOn (assembly)
 
-
-
 Revolver.settings
 
 // Enable aspectj for kamon
 aspectjSettings
-
-lazy val foo = taskKey[Unit]("Foo task")
-foo := {
-}
-
 
 javaOptions in run <++= AspectjKeys.weaverOptions in Aspectj
 // javaOptions in Revolver.reStart += "-javaagent:~/.ivy2/aspectj/aspectj-weaver.jar your-app.jar"

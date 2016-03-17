@@ -3,21 +3,16 @@ package org.nuata.core
 import akka.actor.{Props, ActorSystem}
 import akka.io.IO
 import akka.util.Timeout
-import kamon.Kamon
+//import kamon.Kamon
 import org.nuata.core.actors.HttpActor
 import org.nuata.shared.{Settings, SinglePID}
+import org.nuata.shared.{SinglePID, Settings}
 import spray.can.Http
 import scala.concurrent.duration._
 import akka.pattern.ask
-//import io.k
 
 object Boot extends App with SinglePID {
-  Kamon.start()
-
-
-  val someCounter = Kamon.metrics.counter("some-counter")
-  someCounter.increment()
-
+//  Kamon.start()
 
   // we need an ActorSystem to host our application
   implicit val system = ActorSystem("nuata-system")
