@@ -17,18 +17,21 @@ trait Task {
 
   def run(options: Map[String, Any])
 
+  def stop
+  def percentage : Double
+  def doing : String
+  def status : TaskStatus
+
   var taskId : Option[String] = None
 
-  def createTask(options: Map[String, Any]) = {
-    val task = TaskEntry(None, None, name, TaskStatus.Initialize.toString, 0D, Some(new Date()), options)
+  def createTask(options: Map[String, Any]): Future[String] = {
+    val task = TaskEntry(None, None, name, TaskStatus.Running.toString, Some(new Date()), options)
     TaskRepository.index(task).map { res =>
       taskId = Some(res.id)
-      run(options)
-      updatePercentage(1D).map { future =>
-        future.map { res =>
-          updateStatus(TaskStatus.Complete)
-        }
+      Future(run(options)).map { _ =>
+        updateStatus(TaskStatus.Complete)
       }
+      res.id
     }
   }
 
@@ -38,15 +41,5 @@ trait Task {
     }
   }
 
-  def isStopped : Future[Boolean] = {
-    taskId.map { id =>
-      TaskRepository.byId(id).map { task =>
-        task.isStopped
-      }
-    }.getOrElse(Future(false))
-  }
-
-  def updatePercentage(percentage: Double) = update(task => task.copy(percentage = percentage))
   def updateStatus(status: TaskStatus) = update(task => task.copy(status = status.toString))
-  def updateDoing(doing: String) = update(task => task.copy(doing = doing))
 }

@@ -1,6 +1,7 @@
 package org.nuata.attributes.queries
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.elasticsearch.search.sort.SortOrder
 import org.nuata.core.queries.SearchQuery
 
 /**
@@ -32,5 +33,7 @@ case class AttributeSearchQuery(name: String, page: Int, limit: Int, lang: Strin
     mergeQuery(nameQuery, instanceOfQuery, dataTypeQuery)
   }
 
-
+  override def sort = {
+    List(field sort "nbItems" order( SortOrder.DESC))
+  }
 }

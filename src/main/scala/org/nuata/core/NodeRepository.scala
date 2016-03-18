@@ -4,11 +4,13 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.source.Indexable
 import com.sksamuel.elastic4s.{ElasticDsl, HitAs}
 import org.elasticsearch.action.get.GetResponse
-import org.json4s.JsonAST.{JDouble, JString, JField, JObject}
+import org.json4s.JsonAST.{JDouble, JField, JObject, JString}
 import org.json4s.jackson.JsonMethods._
 import org.nuata.attributes.AttributeRepository._
-import org.nuata.core.queries.{SuggestQuery, NameQuery}
-import org.nuata.models._
+import org.nuata.core.queries.{NameQuery, SuggestQuery}
+import org.nuata.models.SearchSuggestion
+import org.nuata.models.EsModel
+import org.nuata.models.Label
 import org.nuata.shared.ElasticSearch
 import org.nuata.shared.json.OptExtractors.JStringOpt
 
@@ -20,7 +22,7 @@ import scala.util.Try
 /**
  * Created by nico on 03/03/16.
  */
-abstract class NodeRepository[T <: EsModel[T]](_type: String, _otherIndexName : Option[String] = None)(implicit mf: scala.reflect.Manifest[T], hitAs: HitAs[T], indexable: Indexable[T]) extends BaseRepository[T](_type, _otherIndexName) {
+class NodeRepository[T <: EsModel[T]](_type: String, _otherIndexName : Option[String] = None)(implicit mf: scala.reflect.Manifest[T], hitAs: HitAs[T], indexable: Indexable[T]) extends BaseRepository[T](_type.toString, _otherIndexName)(mf, hitAs, indexable) {
 
   val suggestFields = Array("suggestName")
 

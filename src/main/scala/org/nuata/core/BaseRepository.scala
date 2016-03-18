@@ -72,11 +72,21 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
     }
   }
 
-  def foreach(bulkSize: Int = 1000, query: QueryDefinition = matchAllQuery, duration: Duration = 1 minutes)(f: (RichSearchResponse, T, Long) => Unit) = {
+  def all(f: (RichSearchResponse, T, Long) => Unit, bulkSize: Int = 1000, query: QueryDefinition = matchAllQuery, duration: Duration = 1 minutes) = {
     var i: Long = 0
-    client.iterateSearch(search in path query query)(duration).foreach { res =>
+    client.iterateSearch(search in path query query size bulkSize)(duration).foreach { res =>
       res.as[T].foreach { item =>
         f(res, item, i)
+        i += 1
+      }
+    }
+  }
+
+  def allIds(f: (RichSearchResponse, RichSearchHit, Long) => Unit, bulkSize: Int = 1000, query: QueryDefinition = matchAllQuery, duration: Duration = 1 minutes) = {
+    var i: Long = 0
+    client.iterateSearch(search in path query query size bulkSize)(duration).foreach { res =>
+      res.hits.foreach { hit =>
+        f(res, hit, i)
         i += 1
       }
     }

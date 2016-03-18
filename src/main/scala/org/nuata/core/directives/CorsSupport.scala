@@ -16,18 +16,17 @@ trait CorsSupport extends HttpService {
   lazy val allowedOrigin: AllowedOrigins = {
     //    val config = ConfigFactory.load()
     // val sAllowedOrigin = config.getString("cors.allowed-origin")
-    //  val sAllowedOrigin = Seq("https://nuata.org")
-    //    SomeOrigins(sAllowedOrigin.map(x => HttpOrigin(x)))
+//      val sAllowedOrigin = Seq("https://nuata.io")
+//        SomeOrigins(sAllowedOrigin.map(x => HttpOrigin(x)))
     AllOrigins
   }
 
-  lazy val origin2 = SomeOrigins(Seq(HttpOrigin("https://nuata.org")))
+//  lazy val origin2 = SomeOrigins(Seq(HttpOrigin("https://nuata.io")))
 
   //this directive adds access control headers to normal responses
   private def addAccessControlHeaders: Directive0 = {
     mapHttpResponseHeaders { headers =>
       `Access-Control-Allow-Origin`(allowedOrigin) +:
-//        `Access-Control-Allow-Origin`(origin2) +:
         `Access-Control-Allow-Credentials`(true) +:
         `Access-Control-Allow-Headers`("Authorization", "Content-Type", "X-Requested-With") +:
         headers

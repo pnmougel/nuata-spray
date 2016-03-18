@@ -150,9 +150,8 @@ Revolver.settings
 // Enable aspectj for kamon
 aspectjSettings
 
-javaOptions in run <++= AspectjKeys.weaverOptions in Aspectj
-// javaOptions in Revolver.reStart += "-javaagent:~/.ivy2/aspectj/aspectj-weaver.jar your-app.jar"
-javaOptions in Revolver.reStart <++= AspectjKeys.weaverOptions in Aspectj
+//javaOptions in run <++= AspectjKeys.weaverOptions in Aspectj
+//javaOptions in Revolver.reStart <++= AspectjKeys.weaverOptions in Aspectj
 
 fork in run := true
 
