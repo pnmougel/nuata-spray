@@ -3,7 +3,7 @@ package org.nuata.viewers
 import akka.actor.ActorRefFactory
 import org.nuata.attributes.queries.AttributeSearchQuery
 import org.nuata.core.directives.GetParamsDirective._
-import org.nuata.core.queries.SearchQuery
+import org.nuata.core.queries.{BaseSearchQuery, SearchQuery}
 import spray.http.StatusCodes._
 import spray.routing._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,9 +21,10 @@ import org.nuata.shared.Json4sProtocol
 object ViewerRoutes extends RouteProvider with Json4sProtocol {
   def route(implicit settings: RoutingSettings, refFactory: ActorRefFactory): Route = {
     pathPrefix("viewer") {
-      (get & getParams[SearchQuery]) { searchQuery =>
+      (get & getParams[BaseSearchQuery]) { searchQuery =>
         complete(ViewerRepository.list(searchQuery).map { case (nbItems, items) =>
           decompose(Map("nbItems" -> nbItems, "items" -> items))
+
         })
       } ~ (post & entity(as[Viewer])) { viewer =>
         complete(ViewerRepository.indexAndMap(viewer))

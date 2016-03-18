@@ -24,6 +24,11 @@ trait Task {
     TaskRepository.index(task).map { res =>
       taskId = Some(res.id)
       run(options)
+      updatePercentage(1D).map { future =>
+        future.map { res =>
+          updateStatus(TaskStatus.Complete)
+        }
+      }
     }
   }
 

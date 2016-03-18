@@ -10,7 +10,7 @@ import org.json4s._
 import org.json4s.ext.{EnumNameSerializer, EnumSerializer}
 import org.json4s.jackson.JsonMethods._
 import org.nuata.authentication.Role
-import org.nuata.core.queries.SearchQuery
+import org.nuata.core.queries.{BaseSearchQuery, SearchQuery}
 import org.nuata.models.{Attribute, EsModel}
 import org.nuata.shared._
 import org.nuata.shared.json.DateSerializer
@@ -69,6 +69,16 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
       items.zip(res.items).map( entry  => {
         entry._1.withId(entry._2.id)
       })
+    }
+  }
+
+  def foreach(bulkSize: Int = 1000, query: QueryDefinition = matchAllQuery, duration: Duration = 1 minutes)(f: (RichSearchResponse, T, Long) => Unit) = {
+    var i: Long = 0
+    client.iterateSearch(search in path query query)(duration).foreach { res =>
+      res.as[T].foreach { item =>
+        f(res, item, i)
+        i += 1
+      }
     }
   }
 

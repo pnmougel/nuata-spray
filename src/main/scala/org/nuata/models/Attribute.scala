@@ -12,6 +12,7 @@ case class Attribute(_id: Option[String], _score: Option[Double],
                       instancesOf: Array[String],
                       subclassesOf: Array[String],
                       attributeIds: Array[String],
+                      nbItems: Option[Int],
                       edges: Edges) extends EsModel[Attribute] {
                          def withId(id: String) = this.copy(_id = Some(id))
                        }
