@@ -6,3 +6,4 @@ import org.nuata.models.datavalues._
  */
 case class TimeEdge(attributeId: String, value: Option[Time], qualifiers: Option[Edges], qualifiersOrder: Option[Array[String]], sources: Option[Array[Edges]])
   extends Edge[Time]
+
