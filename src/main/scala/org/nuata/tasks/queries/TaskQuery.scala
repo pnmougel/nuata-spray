@@ -9,13 +9,7 @@ import org.nuata.core.queries.SearchQuery
  */
 case class TaskQuery(name: Option[String], status: Option[String] = None, page: Int = 1, limit: Int = 5) extends SearchQuery {
   def query = {
-    val nameQuery = name.map { name =>
-      if(name.isEmpty) {
-        matchAllQuery
-      } else {
-        termQuery("name", name)
-      }
-    }.getOrElse(matchAllQuery)
+    val nameQuery = matchAllOr(name, value => termQuery("name", value))
 
     val statusQuery = status.map { status =>
       if(status.toLowerCase == "all" || status.isEmpty) {
@@ -29,6 +23,6 @@ case class TaskQuery(name: Option[String], status: Option[String] = None, page: 
   }
 
   override def sort = {
-    List(field sort "createdAt" order( SortOrder.DESC))
+    List(field sort "created_at" order( SortOrder.DESC))
   }
 }
