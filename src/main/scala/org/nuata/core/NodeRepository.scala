@@ -6,7 +6,6 @@ import com.sksamuel.elastic4s.{ElasticDsl, HitAs}
 import org.elasticsearch.action.get.GetResponse
 import org.json4s.JsonAST.{JDouble, JField, JObject, JString}
 import org.json4s.jackson.JsonMethods._
-import org.nuata.attributes.AttributeRepository._
 import org.nuata.core.queries.{NameQuery, SuggestQuery}
 import org.nuata.models.SearchSuggestion
 import org.nuata.models.EsModel
@@ -17,7 +16,7 @@ import org.nuata.shared.json.OptExtractors.JStringOpt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
-
+import org.nuata.shared.json.ESJackson._
 
 /**
  * Created by nico on 03/03/16.

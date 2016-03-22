@@ -13,24 +13,28 @@ import org.nuata.authentication.Role
 import org.nuata.core.queries.{BaseSearchQuery, SearchQuery}
 import org.nuata.models.{Attribute, EsModel}
 import org.nuata.shared._
-import org.nuata.shared.json.DateSerializer
+import org.nuata.shared.json.{SnakizeKeys, DateSerializer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import scala.concurrent.duration._
+
+import org.nuata.shared.json.ESJackson._
 /**
  * Created by nico on 02/11/15.
  */
 
 abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherIndexName : Option[String] = None)(implicit mf: scala.reflect.Manifest[T], hitAs: HitAs[T], indexable: Indexable[T]) {
+
+
   val indexName = otherIndexName.getOrElse("nuata")
   val path = indexName / `type`
   val client = ElasticSearch.client
 
 //  implicit val formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(Role) + new EnumSerializer(Role)
 //  implicit val formats = DefaultFormats + org.json4s.ext.DateTimeSerializer
-  implicit val formats = DefaultFormats ++ org.json4s.ext.JavaTypesSerializers.all + DateSerializer
+  implicit val formats = DefaultFormats ++ org.json4s.ext.JavaTypesSerializers.all + DateSerializer + SnakizeKeys.serializer
 
   def count : Future[Long] = client.execute { ElasticDsl.search in indexName limit 0 } map { res =>
     res.totalHits

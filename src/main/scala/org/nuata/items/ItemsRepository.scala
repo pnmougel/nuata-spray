@@ -1,6 +1,6 @@
 package org.nuata.items
 
-import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
+import org.nuata.shared.json.ESJackson._
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.json4s.DefaultFormats
 import org.nuata.core.{NodeRepository, BaseRepository}

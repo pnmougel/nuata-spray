@@ -3,7 +3,7 @@ package org.nuata.viewers
 import org.nuata.core.BaseRepository
 import org.nuata.models._
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
+import org.nuata.shared.json.ESJackson._
 import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.ExecutionContext.Implicits.global

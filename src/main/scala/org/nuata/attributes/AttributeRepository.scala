@@ -1,8 +1,8 @@
 package org.nuata.attributes
 
-import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.nuata.core.NodeRepository
 import org.nuata.models.Attribute
+import org.nuata.shared.json.ESJackson._
 
 /**
  * Created by nico on 24/02/16.

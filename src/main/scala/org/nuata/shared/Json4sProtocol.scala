@@ -2,6 +2,7 @@ package org.nuata.shared
 
 import org.json4s.DefaultFormats
 import org.json4s.ext.EnumNameSerializer
+import org.nuata.shared.json.SnakizeKeys
 import spray.httpx.Json4sJacksonSupport
 
 /**
@@ -10,5 +11,5 @@ import spray.httpx.Json4sJacksonSupport
 
 trait Json4sProtocol extends Json4sJacksonSupport {
 
-  implicit def json4sJacksonFormats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(NameOperations)
+  implicit def json4sJacksonFormats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(NameOperations) + SnakizeKeys.serializer
 }
