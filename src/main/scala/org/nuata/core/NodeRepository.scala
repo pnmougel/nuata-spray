@@ -23,7 +23,7 @@ import org.nuata.shared.json.ESJackson._
  */
 class NodeRepository[T <: EsModel[T]](_type: String, _otherIndexName : Option[String] = None)(implicit mf: scala.reflect.Manifest[T], hitAs: HitAs[T], indexable: Indexable[T]) extends BaseRepository[T](_type.toString, _otherIndexName)(mf, hitAs, indexable) {
 
-  val suggestFields = Array("suggestName")
+  val suggestFields = Array("suggest_name")
 
   def getSuggestions(searchOptions: SuggestQuery) : Future[Array[SearchSuggestion]] = {
     val suggestions = suggestFields.map { field =>
