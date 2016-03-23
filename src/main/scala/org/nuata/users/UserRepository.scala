@@ -1,22 +1,32 @@
-package org.nuata.authentication
+package org.nuata.users
 
 import com.sksamuel.elastic4s.ElasticDsl
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.jackson.ElasticJackson
-import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
+import com.sksamuel.elastic4s.mappings.FieldType.{ObjectType, StringType}
+import com.sksamuel.elastic4s.mappings._
+import org.nuata.authentication.Role
 import org.nuata.authentication.bearer.BearerToken
 import org.nuata.core.BaseRepository
-import org.nuata.models.User
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
-
+import org.nuata.core.json.ESJackson._
 
 /**
  * Created by nico on 29/12/15.
  */
-object UserRepository extends BaseRepository[User]("user") {
+object UserRepository extends BaseRepository[User]("account", Some("user")) {
+  override def indexMapping = {
+    mapping("account").fields(
+      field("email") typed StringType index "not_analyzed",
+      field("name") typed StringType index "not_analyzed",
+      field("roles") typed ObjectType,
+      field("token") typed StringType index "not_analyzed",
+      field("password") typed StringType index "not_analyzed"
+    )
+  }
+
   private val maxTryTokenGenerate = 10
 
   /**
@@ -58,7 +68,7 @@ object UserRepository extends BaseRepository[User]("user") {
 
   def getUserByToken(token: BearerToken): Future[Option[User]] = {
     client.execute {
-      search in path query termQuery("token", token)
+      search in path query termQuery("token", token.token)
     }.map(res => {
       if(res.totalHits == 1) {
         Some(res.as[User].head)
@@ -68,23 +78,37 @@ object UserRepository extends BaseRepository[User]("user") {
     })
   }
 
-  def createUser(email: String, name: Option[String]) = {
-    val userAccount = User(None, None, email, name, Role.User)
-    UserRepository.index(userAccount).flatMap(res => {
+  def getOrCreateUserTokenFromOAuth(user: User) : Future[String] = {
+    client.execute { search in path query termQuery("email", user.email) }.flatMap { res =>
+      if(res.totalHits == 0) {
+        UserRepository.index(user).flatMap(res => {
+          generateTokenForUser(res.getId)
+        })
+      } else {
+        generateTokenForUser(res.hits.head.id)
+      }
+    }
+  }
+
+  def createDefaultAdminAccount(email: String, password: String) : Future[String] = {
+    println(password)
+    val user = User(None, None, email, Some("admin"), Role.Admin, Some(password))
+    UserRepository.index(user).flatMap(res => {
       generateTokenForUser(res.getId)
     })
   }
 
-  def getUser(login: String): Future[Option[User]] = {
-    client.execute {
-      search in path query termQuery("login", login)
-    }.map(res => {
-      if(res.totalHits == 1) {
-        Some(res.as[User].head)
-      } else {
-        None
+  def getUserByEmailAndPassword(email: String, password: String) : Future[Option[User]] = {
+    client.execute { search in path query
+      bool {
+        must {
+          Seq(termQuery("email", email),
+          termQuery("password", password))
+        }
       }
-    })
+    }.map { res =>
+      res.as[User].headOption
+    }
   }
 
   def emailExists(email: String) : Future[Boolean] = {
