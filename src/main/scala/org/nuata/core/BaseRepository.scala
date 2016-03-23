@@ -1,6 +1,7 @@
 package org.nuata.core
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.ElasticDsl.index
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.source.Indexable
 import org.elasticsearch.action.get.GetResponse
@@ -10,17 +11,17 @@ import org.json4s._
 import org.json4s.ext.{EnumNameSerializer, EnumSerializer}
 import org.json4s.jackson.JsonMethods._
 import org.nuata.authentication.Role
+import org.nuata.core.json.{ESJackson, SnakizeKeys}
+import org.nuata.core.json.serializers.DateSerializer
 import org.nuata.core.queries.{BaseSearchQuery, SearchQuery}
+import org.nuata.logging.requests.LogRequestRepository._
 import org.nuata.models.{Attribute, EsModel}
-import org.nuata.shared._
-import org.nuata.shared.json.{SnakizeKeys, DateSerializer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import scala.concurrent.duration._
 
-import org.nuata.shared.json.ESJackson._
 /**
  * Created by nico on 02/11/15.
  */
@@ -32,8 +33,6 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
   val path = indexName / `type`
   val client = ElasticSearch.client
 
-//  implicit val formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all + new EnumNameSerializer(Role) + new EnumSerializer(Role)
-//  implicit val formats = DefaultFormats + org.json4s.ext.DateTimeSerializer
   implicit val formats = DefaultFormats ++ org.json4s.ext.JavaTypesSerializers.all + DateSerializer + SnakizeKeys.serializer
 
   def count : Future[Long] = client.execute { ElasticDsl.search in indexName limit 0 } map { res =>
@@ -54,6 +53,28 @@ abstract class BaseRepository[T <: EsModel[T]](val `type`: String, val otherInde
       }
     }
   }
+
+  def indexMapping = {
+    mapping(`type`)
+  }
+
+  def createIndex = {
+    client.execute(indexExists(indexName)).map { indexExists =>
+      if(!indexExists.isExists) {
+        client.execute(create index indexName mappings indexMapping)
+      }
+    }
+  }
+
+  def deleteIndex = {
+    client.execute(indexExists(indexName)).map { indexExists =>
+      if(indexExists.isExists) {
+        client.execute(delete index indexName).await
+      }
+      client.execute(create index indexName mappings indexMapping)
+    }
+  }
+
 
   def bulkIndex(items: Seq[T], idOpt: Option[String] = None): Future[BulkResult] = {
     val indexQueries = items.map( item =>
