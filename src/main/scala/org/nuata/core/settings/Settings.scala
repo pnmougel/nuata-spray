@@ -1,4 +1,4 @@
-package org.nuata.shared
+package org.nuata.core.settings
 
 import com.typesafe.config.ConfigFactory
 

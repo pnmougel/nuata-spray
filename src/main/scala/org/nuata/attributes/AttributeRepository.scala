@@ -1,8 +1,8 @@
 package org.nuata.attributes
 
 import org.nuata.core.NodeRepository
+import org.nuata.core.json.ESJackson._
 import org.nuata.models.Attribute
-import org.nuata.shared.json.ESJackson._
 
 /**
  * Created by nico on 24/02/16.

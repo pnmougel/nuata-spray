@@ -1,4 +1,4 @@
-package org.nuata.shared
+package org.nuata.core.utils
 
 import java.security.MessageDigest
 

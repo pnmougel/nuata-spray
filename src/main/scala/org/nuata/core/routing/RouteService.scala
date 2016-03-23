@@ -1,21 +1,30 @@
 package org.nuata.core.routing
 
 import org.nuata.core.directives.CorsSupport
-import org.nuata.core.reflections.Reflection
-import org.reflections.Reflections
-import spray.routing._
-import scala.collection.JavaConversions._
 import spray.routing._
 
 /**
- * Created by nico on 23/12/15.
+ * This file is auto generated, do not edit
+ * The generating template is located in the resources folder
  */
 trait RouteService
   extends TracingHttpService
   with CorsSupport {
 
-  // Dynamically load the routes
-  val routesProvided = Reflection.getInstancesOf[RouteProvider].map(_.route)
+  val routesProvided = List(org.nuata.suggest.SuggestRoute.route, 
+	org.nuata.users.UserRoute.route, 
+	org.nuata.language.LanguageRoutes.route, 
+	org.nuata.logging.requests.LogRequestRoutes.route, 
+	org.nuata.authentication.oauth.OAuthRoute.route, 
+	org.nuata.services.DatasetUpload.route,
+	org.nuata.services.IconService.route, 
+	org.nuata.datatypes.DataTypes.route, 
+	org.nuata.viewers.ViewerRoutes.route, 
+	org.nuata.tasks.TaskRoutes.route, 
+	org.nuata.datatypes.DataTypesRoute.route, 
+	org.nuata.items.ItemRoutes.route, 
+	org.nuata.services.commonsmedia.CommonsMediaRoute.route, 
+	org.nuata.attributes.AttributeRoutes.route)
 
   val allRoutes = routesProvided.reduce((a, b) => { a ~ b })
 

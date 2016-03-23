@@ -1,4 +1,4 @@
-package org.nuata.shared.json
+package org.nuata.core.json
 
 import com.sksamuel.elastic4s.{RichSearchHit, HitAs, Reader}
 import com.sksamuel.elastic4s.source.Indexable
@@ -10,6 +10,7 @@ import org.json4s.jackson.Serialization._
  * Created by nico on 22/03/16.
  */
 object ESJackson {
+
   implicit val formats = DefaultFormats + SnakizeKeys.serializer
 
   implicit def JacksonJsonIndexable[T]: Indexable[T] = new Indexable[T] {

@@ -1,4 +1,4 @@
-package org.nuata.shared.json
+package org.nuata.core.json
 
 import org.json4s.JsonAST._
 

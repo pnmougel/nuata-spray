@@ -1,9 +1,7 @@
-package org.nuata.directives
+package org.nuata.core.directives
 
-import shapeless.HNil
 import spray.http.HttpHeaders.RawHeader
-import spray.http._
-import spray.routing.{Directive1, HttpService, Directive}
+import spray.routing.{Directive1, HttpService}
 
 /**
  * Created by nico on 20/02/16.

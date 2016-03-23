@@ -1,9 +1,10 @@
-package org.nuata.core.reflections
+package org.nuata.core.utils.reflections
 
 import org.reflections.Reflections
+
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
+
 
 /**
  * Created by nico on 17/03/16.

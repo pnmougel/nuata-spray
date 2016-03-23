@@ -1,6 +1,6 @@
-package org.nuata.shared
+package org.nuata.core.utils
 
-import java.io.{PrintWriter, File}
+import java.io.{File, PrintWriter}
 import java.lang.management.ManagementFactory
 
 import scala.io.Source
@@ -11,6 +11,7 @@ import scala.sys.process._
  */
 trait SinglePID {
   val apiFolder = new File(System.getProperty("user.home") + "/api")
+
 
   if(apiFolder.exists()) {
     // Get the running pid

@@ -1,9 +1,9 @@
-package org.nuata.shared.json
+package org.nuata.core.json.serializers
 
 import java.util.Date
 
 import org.json4s.CustomSerializer
-import org.json4s.JsonAST.{JInt, JNull, JString}
+import org.json4s.JsonAST.{JInt, JNull}
 
 /**
  * Created by nico on 17/03/16.
