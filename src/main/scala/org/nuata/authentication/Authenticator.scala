@@ -1,25 +1,35 @@
 package org.nuata.authentication
 
-import com.typesafe.config.Config
-import org.nuata.authentication.Role._
 import org.nuata.authentication.bearer.{BearerToken, BearerTokenHttpAuthenticator}
-import spray.http.HttpHeaders.{Authorization, `WWW-Authenticate`}
-import spray.http._
-import spray.routing.AuthenticationFailedRejection.{CredentialsRejected, CredentialsMissing}
-import spray.routing.{RoutingSettings, AuthenticationFailedRejection, RequestContext}
-import spray.routing.authentication._
+import org.nuata.users.UserRepository
+import org.nuata.users.UserRoute._
+import spray.routing._
 import spray.routing.directives.AuthMagnet
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Created by nico on 29/12/15.
  */
 trait Authenticator {
+  val isAdmin: Directive1[AuthInfo] = {
+    authenticate(basicUserAuthenticator).flatMap {
+      case a: AuthInfo => {
+        if(a.hasPermission(Permission.Admin)) {
+          provide(a)
+        } else {
+          reject
+        }
+      }
+      case _ => {
+        reject
+      }
+    }
+  }
+
   def basicUserAuthenticator(implicit ec: ExecutionContext): AuthMagnet[AuthInfo] = {
     def validateUser(bearerToken: Option[BearerToken]): Future[Option[AuthInfo]] = {
-//      Future(Some(new AuthInfo(org.nuata.models.User(Some("id"), None, "login", None, "email", Role.User))))
-
       bearerToken.map { token =>
         UserRepository.getUserByToken(token).map { optUser =>
           for(user <- optUser) yield {
@@ -33,4 +43,6 @@ trait Authenticator {
 
     new BearerTokenHttpAuthenticator[AuthInfo]("Private API", authenticator _)
   }
+
+//  def authenticate
 }
