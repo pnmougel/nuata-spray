@@ -1,6 +1,7 @@
-package org.nuata.shared
+package org.nuata.core
 
-import com.sksamuel.elastic4s.{ElasticsearchClientUri, ElasticClient}
+import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
+import org.nuata.core.settings.Settings
 
 
 /**

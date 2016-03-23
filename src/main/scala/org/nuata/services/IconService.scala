@@ -6,33 +6,24 @@ import java.io.File
 import javax.imageio.ImageIO
 
 import akka.actor.ActorRefFactory
-import org.json4s.Extraction
-import org.nuata.authentication.queries.UserAccountQuery
-import org.nuata.core.directives.CorsSupport
+import org.nuata.core.json.Json4sProtocol
 import org.nuata.core.routing.RouteProvider
-import org.nuata.models._
-import org.nuata.shared.Json4sProtocol
-import spray.http.{MediaTypes, MediaType}
-import spray.http.StatusCodes._
 import spray.routing._
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import MediaType._
-import MediaTypes._
 
 /**
  * Created by nico on 30/12/15.
+ *
  */
 object IconService extends RouteProvider with Json4sProtocol {
   val fontInputStream = this.getClass.getResourceAsStream("/fonts/Questrial-Regular.ttf")
 
-  val ge = GraphicsEnvironment.getLocalGraphicsEnvironment()
+  val ge = GraphicsEnvironment.getLocalGraphicsEnvironment
   val questrialFont = Font.createFont(Font.TRUETYPE_FONT, fontInputStream)
   ge.registerFont(questrialFont)
 
   def getIcon(size: Int, format: String): File = {
     val outputDirPath = "cache/icon/"
-    val outputFile = new File(s"${outputDirPath}icon_${size}.${format}")
+    val outputFile = new File(s"${outputDirPath}icon_$size.$format")
     val useCache = true
     if (!outputFile.exists() || !useCache) {
       val bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB)
@@ -46,7 +37,7 @@ object IconService extends RouteProvider with Json4sProtocol {
       g.setFont(font)
       val width = g.getFontMetrics.charWidth('n')
       g.setColor(Color.WHITE)
-      g.drawString("n", ((size.toFloat - width) / 2), size)
+      g.drawString("n", (size.toFloat - width) / 2, size)
       g.dispose()
 
       val imagePath = new File(outputDirPath)

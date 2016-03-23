@@ -1,6 +1,8 @@
 package org.nuata.language
 
 import akka.actor.ActorRefFactory
+import org.nuata.core.json.Json4sProtocol
+import org.nuata.core.utils.LanguageDetector
 import spray.http.StatusCodes._
 import spray.routing._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -10,7 +12,6 @@ import org.json4s.Extraction._
 
 import org.nuata.core.routing.RouteProvider
 import org.nuata.models._
-import org.nuata.shared.Json4sProtocol
 
 /**
  * Created by nico on 01/03/16.
@@ -30,7 +31,8 @@ object LanguageRoutes extends RouteProvider with Json4sProtocol {
   def route(implicit settings: RoutingSettings, refFactory: ActorRefFactory): Route = {
     (path("languages") & get) {
       complete(languages)
+    } ~ (path("language" / "detect" / Segment) & get) { text =>
+      complete(LanguageDetector.getLanguage(text))
     }
-
   }
 }

@@ -10,13 +10,12 @@ import org.nuata.core.queries.{NameQuery, SuggestQuery}
 import org.nuata.models.SearchSuggestion
 import org.nuata.models.EsModel
 import org.nuata.models.Label
-import org.nuata.shared.ElasticSearch
-import org.nuata.shared.json.OptExtractors.JStringOpt
+import org.nuata.core.json.ESJackson._
+import org.nuata.core.json.OptExtractors._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
-import org.nuata.shared.json.ESJackson._
 
 /**
  * Created by nico on 03/03/16.

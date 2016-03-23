@@ -1,8 +1,8 @@
 package org.nuata.services.commonsmedia
 
 import org.nuata.core.BaseRepository
+import org.nuata.core.utils.StringHash
 import org.nuata.services.commonsmedia.model.MediaInfo
-import org.nuata.shared.StringHash
 import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 
 import scala.concurrent.Future

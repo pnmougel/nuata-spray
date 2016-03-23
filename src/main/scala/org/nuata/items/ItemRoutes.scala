@@ -8,11 +8,11 @@ import org.json4s.jackson.JsonMethods._
 import org.nuata.attributes.AttributeRepository
 import org.nuata.attributes.AttributeRoutes._
 import org.nuata.core.directives.GetParamsDirective._
+import org.nuata.core.json.Json4sProtocol
 import org.nuata.core.queries.{SuggestQuery, NameQuery}
 import org.nuata.core.routing.RouteProvider
 import org.nuata.items.queries.{ItemQuery}
 import org.nuata.models._
-import org.nuata.shared.{ElasticSearch, Json4sProtocol}
 import spray.routing._
 
 import scala.concurrent.ExecutionContext.Implicits.global

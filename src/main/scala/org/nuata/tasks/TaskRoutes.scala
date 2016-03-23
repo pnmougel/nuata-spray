@@ -5,13 +5,14 @@ import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.json4s.Extraction._
 import org.json4s.jackson.JsonMethods._
 import org.nuata.attributes.queries.{AttributeQuery, AttributeSearchQuery}
+import org.nuata.authentication.Authenticator
+import org.nuata.core.json.Json4sProtocol
 import org.nuata.core.queries.{IdQuery, NameQuery, SearchQuery, SuggestQuery}
-import org.nuata.core.reflections.Reflection
 import org.nuata.core.routing.RouteProvider
+import org.nuata.core.utils.reflections.Reflection
 import org.nuata.items.queries.ItemQuery
 import org.nuata.models._
 import org.nuata.core.directives.GetParamsDirective._
-import org.nuata.shared.{ElasticSearch, Json4sProtocol}
 import org.nuata.tasks.queries.TaskQuery
 import spray.http.StatusCodes._
 import spray.routing._
@@ -26,14 +27,14 @@ import scala.collection.mutable
 /**
  * Created by nico on 17/03/16.
  */
-object TaskRoutes extends RouteProvider with Json4sProtocol {
+object TaskRoutes extends RouteProvider with Json4sProtocol with Authenticator {
   val tasks = Reflection.getInstancesOf[Task]
   val taskNameToTask = Map(tasks.map(task => (task.name.toLowerCase, task)) :_*)
 
   var runningTaskIds = mutable.HashMap[String, Task]()
 
   def route(implicit settings: RoutingSettings, refFactory: ActorRefFactory): Route = {
-    pathPrefix("task") {
+    (pathPrefix("task") & isAdmin) { user =>
       (path("names") & get) {
         val result = tasks.map(task => Map("name" -> task.name, "description" -> task.description))
         complete(result)
@@ -61,13 +62,12 @@ object TaskRoutes extends RouteProvider with Json4sProtocol {
       } ~ (path("statuses") & get) {
         complete(TaskStatus.values.map(_.toString.toLowerCase))
       } ~ (path("state") & get & getParams[IdQuery]) { idQuery =>
-          val foo = runningTaskIds.get(idQuery.id).map { task =>
+          complete(runningTaskIds.get(idQuery.id).map { task =>
             Map("running" -> true, "percentage" -> task.percentage, "doing" -> task.doing, "status" -> task.status)
           }.getOrElse {
             TaskRepository.update(idQuery.id, _.copy(status = TaskStatus.Error.toString));
             Map("running" -> false, "status" -> "error")
-          }
-          complete( foo)
+          })
       } ~ (get & getParams[TaskQuery]) { searchQuery =>
         complete(TaskRepository.list(searchQuery).map { case (nbItems, items) =>
           Map("nbItems" -> nbItems, "items" -> items)
