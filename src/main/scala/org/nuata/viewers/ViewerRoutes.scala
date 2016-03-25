@@ -3,6 +3,7 @@ package org.nuata.viewers
 import akka.actor.ActorRefFactory
 import org.nuata.attributes.queries.AttributeSearchQuery
 import org.nuata.core.directives.GetParamsDirective._
+import org.nuata.core.json.Json4sProtocol
 import org.nuata.core.queries.{BaseSearchQuery, SearchQuery}
 import spray.http.StatusCodes._
 import spray.routing._
@@ -12,7 +13,6 @@ import com.sksamuel.elastic4s.jackson.ElasticJackson.Implicits._
 import org.json4s.Extraction._
 import org.nuata.core.routing.RouteProvider
 import org.nuata.models._
-import org.nuata.shared.Json4sProtocol
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

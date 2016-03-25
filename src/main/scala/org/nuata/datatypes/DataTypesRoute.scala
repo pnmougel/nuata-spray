@@ -1,8 +1,8 @@
 package org.nuata.datatypes
 
 import akka.actor.ActorRefFactory
+import org.nuata.core.json.Json4sProtocol
 import org.nuata.core.routing.RouteProvider
-import org.nuata.shared.Json4sProtocol
 import spray.routing.{Route, RoutingSettings}
 
 /**

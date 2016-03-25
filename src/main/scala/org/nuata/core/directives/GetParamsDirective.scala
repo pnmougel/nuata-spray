@@ -4,10 +4,9 @@ import java.util.Date
 
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
-import org.nuata.shared.QueryParams
-import shapeless.HNil
-import spray.routing.{MalformedQueryParamRejection, Directive1, Directive}
 import spray.routing.Directives._
+import spray.routing.{Directive1, MalformedQueryParamRejection}
+
 import scala.reflect.ClassTag
 import scala.reflect.runtime._
 import scala.reflect.runtime.universe._
@@ -47,6 +46,25 @@ object GetParamsDirective {
   private def toDateOpt(v: String) = Try(dateParser.parseDateTime(v).toDate).toOption
   private def toDateTimeOpt(v: String) = Try(dateParser.parseDateTime(v)).toOption
   private def toBooleanOpt(v: String) = Try(v.toBoolean).toOption
+//
+//  val classMirrorCache = mutable.HashMap[TypeTag[_], ClassMirror]()
+//
+//  def classMirror[T](implicit tag: TypeTag[T]) = {
+//    classMirrorCache.getOrElseUpdate(tag, {
+//      val classTag = ClassTag[T]( typeTag[T].mirror.runtimeClass( typeTag[T].tpe ) )
+//      val mod    = currentMirror.classSymbol(classTag.runtimeClass).companion.asModule
+//      val im     = currentMirror.reflect(currentMirror.reflectModule(mod).instance)
+//      val ts     = im.symbol.typeSignature
+//      val mApply = ts.member(universe.TermName("apply")).asMethod
+//      val defaultParams = Map(mApply.paramLists.flatten.zipWithIndex.map { case (p, i) =>
+//        (p.name.toString, ts.member(universe.TermName(s"apply$$default$$${i+1}")))
+//      }.filter( _._2.isMethod ).map( m => {
+//        (m._1, im.reflectMethod(m._2.asMethod)())
+//      }) :_*)
+//
+//      currentMirror.reflectClass(tag.tpe.typeSymbol.asClass)
+//    })
+//  }
 
   private def as[T](params: Map[String, List[String]])(implicit tag: TypeTag[T]) = {
     var args = Vector[Any]()

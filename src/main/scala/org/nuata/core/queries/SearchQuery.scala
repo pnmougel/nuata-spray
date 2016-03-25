@@ -18,6 +18,16 @@ trait SearchQuery {
   def mergeQuery(queries: QueryDefinition*) = {
     bool(must(queries : _*))
   }
+
+  def matchAllOr(field: Option[String], f: String => QueryDefinition): QueryDefinition = {
+    field.map { value =>
+      if(value.trim.isEmpty) {
+        matchAllQuery
+      } else {
+        f(value)
+      }
+    }.getOrElse(matchAllQuery)
+  }
 }
 
 case class BaseSearchQuery(page: Int = 1, limit: Int = 5) extends SearchQuery {

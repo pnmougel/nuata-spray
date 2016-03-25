@@ -1,0 +1,23 @@
+package org.nuata.core.routing
+
+import org.nuata.core.directives.CorsSupport
+import spray.routing._
+
+/**
+ * This file is auto generated, do not edit
+ * The generating template is located in the resources folder
+ */
+trait RouteService
+  extends TracingHttpService
+  with CorsSupport {
+
+  val routesProvided = [[routes]]
+
+  val allRoutes = routesProvided.reduce((a, b) => { a ~ b })
+
+  def routes(implicit settings : spray.routing.RoutingSettings, refFactory : akka.actor.ActorRefFactory) : Route = {
+    cors {
+      allRoutes
+    }
+  }
+}

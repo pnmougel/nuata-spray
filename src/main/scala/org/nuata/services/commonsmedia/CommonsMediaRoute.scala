@@ -5,10 +5,10 @@ import java.net.URLEncoder
 import akka.actor.ActorRefFactory
 import org.json4s.Extraction._
 import org.json4s.jackson.JsonMethods._
+import org.nuata.core.json.Json4sProtocol
 import org.nuata.core.routing.RouteProvider
 import org.nuata.services.commonsmedia.model.{CommonsMediaInfo, CommonsMediaMeta, MediaInfo}
 import org.nuata.services.commonsmedia.queries.MediaInfoQuery
-import org.nuata.shared.{Json4sProtocol, QueryParams}
 import spray.client.pipelining._
 import spray.http.HttpHeaders.Accept
 import spray.http.{HttpRequest, HttpResponse, MediaTypes}

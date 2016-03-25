@@ -3,10 +3,12 @@ package org.nuata.core
 import akka.actor.{Props, ActorSystem}
 import akka.io.IO
 import akka.util.Timeout
+import org.nuata.core.settings.Settings
+import org.nuata.core.utils.SinglePID
+
+
 //import kamon.Kamon
 import org.nuata.core.actors.HttpActor
-import org.nuata.shared.{Settings, SinglePID}
-import org.nuata.shared.{SinglePID, Settings}
 import spray.can.Http
 import scala.concurrent.duration._
 import akka.pattern.ask
