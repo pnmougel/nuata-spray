@@ -78,6 +78,7 @@ mkdir $HOME/elasticsearch/logs
 sudo chown -R elasticsearch:elasticsearch $HOME/elasticsearch
 ```
 
+
 Open elasticsearch config file
 ```bash
 sudo nano /etc/elasticsearch/elasticsearch.yml
